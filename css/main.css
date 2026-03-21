@@ -34,3 +34,16 @@ body{
     color: rgba(255, 255, 255, 0.75);
     font-style: italic;
 }
+
+#contact-map{
+    object-fit: cover;
+    object-position: center;
+}
+
+#contact-container{
+    min-height:600px
+}
+
+#contact-submit{
+    background-color: #28666e
+}

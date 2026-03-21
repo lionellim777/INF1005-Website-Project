@@ -3,7 +3,7 @@
     <div class="container py-5">
       <div class="row g-4">
         <div class="col-12 col-md-4 col-lg-3">
-          <a href="/" class="text-decoration-none text-white fw-bold fs-5">Promenagrate</a>
+          <a href="/" class="text-decoration-none text-white fw-bold fs-5">Pomegranate</a>
           <p class="text-white-50 small mt-3">
             Just because something doesn’t do what you planned it to do doesn’t mean it’s useless. - Thomas Edison 
           </p>
@@ -49,7 +49,7 @@
     <div class="border-top border-white border-opacity-25">
       <div class="container py-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
         <p class="text-white small mb-0">
-          &copy; <span id="year"></span> Promenagrate, Inc. All rights reserved.
+          &copy; <span id="year"></span> Pomegranate, Inc. All rights reserved.
         </p>
         <div class="d-flex gap-3">
           <a href="/privacy" class="text-white-50 text-decoration-none small">Privacy</a>

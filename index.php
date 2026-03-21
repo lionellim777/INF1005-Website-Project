@@ -59,7 +59,6 @@
     </div>
         
     <div class="container my-5">
-
         <div class="text-center py-4">
             <h1 class="fw-bold">Our Collections</h1>
             <p class="text-muted">Discover the latest technological trends and keep up to date</p>
@@ -102,6 +101,27 @@
         </div>
     </div>
     
+    <section class="position-relative py-5">
+        <img id="contact-map" src="assets/contact-map-2.png" alt="contact-map"
+            class="position-absolute top-0 start-0 w-100 h-100">
+        <div id="contact-container" class="container position-relative">
+            <div class="row justify-content-end">
+                <div class="col-md-6">
+                    <div class="bg-white rounded p-4">
+                        <h4 class="fw-bold mb-3">Contact Us</h4>
+                        <form>
+                            <div class="mb-3"><input type="text" class="form-control" placeholder="Your name"></div>
+                            <div class="mb-3"><input type="email" class="form-control" placeholder="Your email"></div>
+                            <div class="mb-3"><textarea class="form-control" placeholder="Your message" rows="3"></textarea></div>
+                            <button id="contact-submit"type="submit" class="btn w-100 text-white">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
     <?php
         include "inc/footer.inc.php";
     ?>
