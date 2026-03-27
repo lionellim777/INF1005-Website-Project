@@ -4,7 +4,7 @@
 
 The website now includes:
 
-- A unified Contact and Feedback form on `index.php`
+- A unified Contact and Feedback form on `contact.php`
 - Server-side validation and sanitization in PHP
 - Customer confirmation emails sent through bundled PHPMailer
 
