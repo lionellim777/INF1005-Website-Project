@@ -19,7 +19,7 @@
     ?>
 
     
-    <div id="carouselExampleCaptions" class="carousel slide mb-4" data-bs-ride="carousel">
+    <div id="carouselExampleCaptions" class="carousel slide carousel-fade mb-4" data-bs-ride="carousel">
         <div class="carousel-indicators">
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
             <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
@@ -58,7 +58,7 @@
         </button> -->
     </div>
         
-    <div class="container my-5">
+    <div class="animated container my-5">
         <div class="text-center py-4">
             <h1 class="fw-bold">Our Collections</h1>
             <p class="text-muted">Discover the latest technological trends and keep up to date</p>
@@ -67,41 +67,76 @@
         <div class="row justify-content-center g-4">
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
                 <div class="card w-100">
-                    <img src="assets/cat.jpg" class="card-img-top" alt="cat">
+                    <img src="assets/guinevere.jpg" class="card-img-top" alt="Guinevere">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">The 1 Series</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.
-                            Some quick example text to build on the card title and make up the bulk of the card's content.
+                        <h5 class="card-title fw-bold">Guinevere</h5>
+                        <p class="card-text">Revolutionary technology. Unlocking the impossible. Game changer.
                         </p>
+                        <a href="catalog.php?category=<?= urlencode('Guinevere') ?>" class="card-btn btn btn-dark btn-sm w-100 view-product">
+                            View Collection
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
                 <div class="card w-100">
-                    <img src="assets/cat.jpg" class="card-img-top" alt="cat">
+                    <img src="assets/thamuz.jpg" class="card-img-top" alt="Thamuz">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">The 1 Series</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.
-                            Some quick example text to build on the card title and make up the bulk of the card's content.
+                        <h5 class="card-title fw-bold">Thamuz</h5>
+                        <p class="card-text">Seamless experience. Empowering your digital world. Built for you.
                         </p>
+                        <a href="catalog.php?category=<?= urlencode('Thamuz') ?>" class="card-btn btn btn-dark btn-sm w-100 view-product">
+                            View Collection
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
                 <div class="card w-100">
-                    <img src="assets/cat.jpg" class="card-img-top" alt="cat">
+                    <img src="assets/esmeralda.jpg" class="card-img-top" alt="Esmeralda">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">The 1 Series</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.
-                            Some quick example text to build on the card title and make up the bulk of the card's content.
+                        <h5 class="card-title fw-bold">Esmeralda</h5>
+                        <p class="card-text">Unrivalled performance. Proven reliability. Trusted expertise.
                         </p>
+                        <a href="catalog.php?category=<?= urlencode('Esmeralda') ?>" class="card-btn btn btn-dark btn-sm w-100 view-product">
+                            View Collection
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center g-4 mt-2">
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                <div class="card w-100">
+                    <img src="assets/sora.jpg" class="card-img-top" alt="Sora">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Sora</h5>
+                        <p class="card-text">Accelerate your workflow. Reinventing value. Get more out of now.
+                        </p>
+                        <a href="catalog.php?category=<?= urlencode('Sora') ?>" class="card-btn btn btn-dark btn-sm w-100 view-product">
+                            View Collection
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
+                <div class="card w-100">
+                    <img src="assets/argus.jpg" class="card-img-top" alt="Argus">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Argus</h5>
+                        <p class="card-text">The power to be your best. Do what you can't. Effortless connectivity.
+                        </p>
+                        <a href="catalog.php?category=<?= urlencode('Argus') ?>" class="card-btn btn btn-dark btn-sm w-100 view-product">
+                            View Collection
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <section class="position-relative py-5">
+    <section class="position-relative py-5 animated">
         <img id="contact-map" src="assets/contact-map-2.png" alt="contact-map"
             class="position-absolute top-0 start-0 w-100 h-100">
         <div id="contact-container" class="container position-relative">
