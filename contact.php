@@ -19,10 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form_action'] ?? '') === '
 
     if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
         $errors['form'] = 'Your session expired. Please refresh the page and try again.';
+    } elseif (support_honeypot_triggered($_POST)) {
+        $errors['form'] = 'We could not process that submission. Please try again.';
+    } elseif (support_submission_is_rate_limited()) {
+        $errors['form'] = support_submission_rate_limit_message();
     } else {
         $errors = validate_contact_payload($formData);
 
         if ($errors === []) {
+            mark_support_submission_attempt();
             $mailResult = send_customer_confirmation_email($formData);
 
             if ($mailResult['sent']) {
@@ -52,7 +57,7 @@ include __DIR__ . '/inc/page-top.inc.php';
                     <span class="support-eyebrow">Contact Center</span>
                     <h1 class="fw-bold mt-2">Contact us or leave feedback in one quick form.</h1>
                     <p class="text-muted mb-4">
-                        Once your message is sent successfully, PHPMailer will email you a confirmation so you know it went through.
+                        Once your message is sent successfully, we will email you a confirmation so you know it went through.
                     </p>
                     <div class="support-feature-list">
                         <div class="support-feature">
@@ -88,9 +93,13 @@ include __DIR__ . '/inc/page-top.inc.php';
                         <div class="alert alert-danger mt-4 mb-0"><?= h($errors['form']) ?></div>
                     <?php endif; ?>
 
-                    <form method="post" class="row g-3 mt-1" novalidate>
+                    <form id="contact-form" method="post" class="row g-3 mt-1" novalidate>
                         <input type="hidden" name="form_action" value="contact_form">
                         <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                        <div class="support-honeypot" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+                        </div>
 
                         <div class="col-12">
                             <label class="form-label fw-semibold" for="inquiry_type">Inquiry type</label>
@@ -117,13 +126,17 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 id="name"
                                 name="name"
                                 type="text"
+                                minlength="2"
                                 maxlength="100"
                                 class="form-control<?= isset($errors['name']) ? ' is-invalid' : '' ?>"
                                 value="<?= h($formData['name']) ?>"
                                 required
                             >
+                            <div class="form-text">Use your actual name so we know how to address you.</div>
                             <?php if (isset($errors['name'])): ?>
                                 <div class="invalid-feedback"><?= h($errors['name']) ?></div>
+                            <?php else: ?>
+                                <div class="invalid-feedback">Please enter at least 2 characters for your name.</div>
                             <?php endif; ?>
                         </div>
 
@@ -138,8 +151,11 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 value="<?= h($formData['email']) ?>"
                                 required
                             >
+                            <div class="form-text">We will use this address for the confirmation email.</div>
                             <?php if (isset($errors['email'])): ?>
                                 <div class="invalid-feedback"><?= h($errors['email']) ?></div>
+                            <?php else: ?>
+                                <div class="invalid-feedback">Please enter a valid email address.</div>
                             <?php endif; ?>
                         </div>
 
@@ -149,13 +165,21 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 id="subject"
                                 name="subject"
                                 type="text"
+                                minlength="3"
                                 maxlength="150"
+                                data-char-count="subject-count"
                                 class="form-control<?= isset($errors['subject']) ? ' is-invalid' : '' ?>"
                                 value="<?= h($formData['subject']) ?>"
                                 required
                             >
+                            <div class="d-flex justify-content-between align-items-center gap-3 form-text">
+                                <span>Keep it short and specific. Avoid adding links here.</span>
+                                <span id="subject-count" class="char-count" aria-live="polite">0 / 150</span>
+                            </div>
                             <?php if (isset($errors['subject'])): ?>
                                 <div class="invalid-feedback"><?= h($errors['subject']) ?></div>
+                            <?php else: ?>
+                                <div class="invalid-feedback">Please enter a subject between 3 and 150 characters.</div>
                             <?php endif; ?>
                         </div>
 
@@ -165,18 +189,31 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 id="message"
                                 name="message"
                                 rows="5"
+                                minlength="10"
                                 maxlength="2000"
+                                data-char-count="message-count"
                                 class="form-control<?= isset($errors['message']) ? ' is-invalid' : '' ?>"
                                 required
                             ><?= h($formData['message']) ?></textarea>
+                            <div class="d-flex justify-content-between align-items-center gap-3 form-text">
+                                <span>Include enough detail for us to understand the issue or feedback. Limit links to keep the form focused.</span>
+                                <span id="message-count" class="char-count" aria-live="polite">0 / 2000</span>
+                            </div>
                             <?php if (isset($errors['message'])): ?>
                                 <div class="invalid-feedback"><?= h($errors['message']) ?></div>
+                            <?php else: ?>
+                                <div class="invalid-feedback">Please enter a message between 10 and 2000 characters.</div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-12 d-flex flex-column flex-sm-row gap-3 align-items-sm-center">
                             <button id="contact-submit" type="submit" class="btn text-white px-4">Send message</button>
                             <small class="text-muted">You will only see success after your confirmation email is sent.</small>
+                        </div>
+                        <div class="col-12">
+                            <div class="support-policy-note">
+                                <strong>Submission policy:</strong> Please avoid sending duplicate messages. We aim to review submissions within 2 to 3 business days, and repeated rapid submissions may be temporarily blocked.
+                            </div>
                         </div>
                     </form>
                 </div>

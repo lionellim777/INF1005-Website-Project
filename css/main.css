@@ -85,6 +85,14 @@ body {
     background-color: #ffffff;
 }
 
+.support-policy-note {
+    border-radius: 1rem;
+    padding: 0.95rem 1rem;
+    background: rgba(40, 102, 110, 0.08);
+    color: #325260;
+    font-size: 0.95rem;
+}
+
 .support-feature-list {
     display: grid;
     gap: 1rem;
@@ -108,11 +116,30 @@ body {
     color: #28666e;
 }
 
+.support-honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
 .form-control,
 .form-select {
     border-radius: 0.9rem;
     padding: 0.85rem 1rem;
     border-color: rgba(22, 49, 61, 0.16);
+}
+
+.form-text {
+    color: #5d7682;
+}
+
+.char-count {
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #28666e;
 }
 
 .btn {
