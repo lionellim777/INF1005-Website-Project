@@ -1,5 +1,5 @@
 <?php
-require_once 'inc/init_session.php';
+require_once 'inc/auth_middleware.php';
 require_once 'inc/security_utils.php';
 
 // Only allow POST requests

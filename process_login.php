@@ -1,5 +1,5 @@
 <?php
-require_once 'inc/init_session.php';
+require_once 'inc/auth_middleware.php';
 require_once 'inc/security_utils.php';
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -12,7 +12,7 @@ $password = $_POST["pwd"] ?? '';
 $errorMsg = "";
 
 if (empty($email) || empty($password)) {
-    $errorMsg = "Email and password are required.";
+    $errorMsg = "Email and Password are required.";
 } else {
     // Securely fetch user data
     $stmt = $db_conn->prepare("SELECT id, fname, lname, password, role FROM users WHERE email = ?");

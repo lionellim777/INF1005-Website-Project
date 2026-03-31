@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
+require_once __DIR__ . '/security_utils.php'; // Bring in our centralized helpers!
+
+// PHPMailer dependencies
 require_once APP_ROOT . '/vendor/PHPMailer/src/Exception.php';
 require_once APP_ROOT . '/vendor/PHPMailer/src/PHPMailer.php';
 require_once APP_ROOT . '/vendor/PHPMailer/src/SMTP.php';
@@ -15,34 +18,15 @@ function support_inquiry_types(): array
     return ['Contact', 'Feedback'];
 }
 
-function normalize_single_line(string $value): string
-{
-    $value = trim($value);
-    $value = strip_tags($value);
-    $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
-
-    return trim($value);
-}
-
-function normalize_multiline(string $value): string
-{
-    $value = trim($value);
-    $value = strip_tags($value);
-    $value = str_replace(["\r\n", "\r"], "\n", $value);
-    $value = preg_replace("/[ \t]+\n/", "\n", $value) ?? $value;
-    $value = preg_replace("/\n{3,}/", "\n\n", $value) ?? $value;
-
-    return trim($value);
-}
-
 function sanitize_contact_payload(array $source): array
 {
+    // Now cleanly relying on security_utils.php
     return [
         'inquiry_type' => normalize_single_line((string) ($source['inquiry_type'] ?? '')),
-        'name' => normalize_single_line((string) ($source['name'] ?? '')),
-        'email' => strtolower(normalize_single_line((string) ($source['email'] ?? ''))),
-        'subject' => normalize_single_line((string) ($source['subject'] ?? '')),
-        'message' => normalize_multiline((string) ($source['message'] ?? '')),
+        'name'         => normalize_single_line((string) ($source['name'] ?? '')),
+        'email'        => strtolower(normalize_single_line((string) ($source['email'] ?? ''))),
+        'subject'      => normalize_single_line((string) ($source['subject'] ?? '')),
+        'message'      => normalize_multiline((string) ($source['message'] ?? '')),
     ];
 }
 
@@ -62,7 +46,7 @@ function validate_contact_payload(array $payload): array
 
     if ($payload['email'] === '') {
         $errors['email'] = 'Please enter your email address.';
-    } elseif (mb_strlen($payload['email']) > 150 || !filter_var($payload['email'], FILTER_VALIDATE_EMAIL)) {
+    } elseif (mb_strlen($payload['email']) > 150 || !is_valid_email($payload['email'])) { // Using our centralized email check
         $errors['email'] = 'Please enter a valid email address.';
     }
 
@@ -83,6 +67,7 @@ function validate_contact_payload(array $payload): array
 
 function build_customer_confirmation_html(array $payload): string
 {
+    // Assuming h() is defined in bootstrap.php. If not, swap these with htmlspecialchars()
     $siteName = h((string) (app_config()['site']['name'] ?? 'Pomegranate'));
     $inquiryType = h($payload['inquiry_type']);
     $name = h($payload['name']);
