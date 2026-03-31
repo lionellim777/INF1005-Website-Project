@@ -2,6 +2,11 @@
     background-color: #285f6b !important;
 }
 
+.navbar-nav .nav-link.active {
+    font-weight: 700 !important;
+    color: #fff !important;
+}
+
 footer {
     background-color: #285f6b !important;
 }

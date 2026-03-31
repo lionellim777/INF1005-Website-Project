@@ -3,102 +3,69 @@
 $all_products = [
     [
         'id'        => 1,
-        'name'      => 'Wireless Headphones',
-        'desc'      => 'Test',
+        'name'      => 'Classical I',
+        'desc'      => 'The first that got us started that will always be part of our history',
         'price'     => 299.00,
         'old_price' => 349.00,
-        'image_url' => 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=80',
+        'image_url' => 'https://images.unsplash.com/photo-1544228865-7d73678c0f28?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'category'  => 'Guinevere',
         'badge'     => 'Sale',
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-1.glb'
     ],
     [
         'id'        => 2,
-        'name'      => 'Minimalist Leather Watch',
-        'desc'      => 'Test',
-        'price'     => 189.00,
+        'name'      => 'Apple & Pomegranate',
+        'desc'      => 'Our friends at Apple loved us, a collab was inevitable. Bringing the best of both worlds into this masterpiece.',
+        'price'     => 489.00,
         'old_price' => null,
-        'image_url' => 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&q=80',
-        'category'  => 'Guinevere',
+        'image_url' => 'https://images.unsplash.com/photo-1742407795182-144225af8ebe?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        'category'  => 'Esmeralda',
         'badge'     => 'New',
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-2.glb'
     ],
     [
         'id'        => 3,
-        'name'      => 'Pour-Over Coffee Set',
-        'desc'      => 'Test',
-        'price'     => 64.00,
+        'name'      => 'Innovation I',
+        'desc'      => 'Filled with love, passion and creativity all in every device. Strives to be the best.',
+        'price'     => 789.00,
         'old_price' => null,
-        'image_url' => 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&q=80',
+        'image_url' => 'https://images.unsplash.com/photo-1512054502232-10a0a035d672?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'category'  => 'Thamuz',
         'badge'     => null,
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-3.glb'
     ],
     [
         'id'        => 4,
-        'name'      => 'Linen Throw Blanket',
-        'desc'      => 'Test',
-        'price'     => 95.00,
-        'old_price' => 120.00,
-        'image_url' => 'https://images.unsplash.com/photo-1580301762395-21ce84d00bc6?w=400&q=80',
+        'name'      => 'Innovation II',
+        'desc'      => 'Filled with love, passion and creativity all in every device. Strives to be the best.',
+        'price'     => 989.00,
+        'old_price' => 1089.00,
+        'image_url' => 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'category'  => 'Thamuz',
         'badge'     => 'Sale',
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-4.glb'
     ],
     [
         'id'        => 5,
-        'name'      => 'Mechanical Keyboard TKL',
-        'desc'      => 'Test',
-        'price'     => 145.00,
-        'old_price' => null,
-        'image_url' => 'https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=400&q=80',
-        'category'  => 'Esmeralda',
-        'badge'     => 'New',
-        'model'     =>'models/product.glb'
-    ],
-    [
-        'id'        => 6,
-        'name'      => 'Stoneware Dinner Set',
-        'desc'      => 'Test',
-        'price'     => 112.00,
-        'old_price' => null,
-        'image_url' => 'https://images.unsplash.com/photo-1603199506016-b9a594b593c0?w=400&q=80',
-        'category'  => 'Esmeralda',
-        'badge'     => null,
-        'model'     =>'models/product.glb'
-    ],
-    [
-        'id'        => 8,
-        'name'      => 'Portable Bluetooth Speaker',
+        'name'      => 'Reality I',
         'desc'      => 'Test',
         'price'     => 79.00,
         'old_price' => 99.00,
-        'image_url' => 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&q=80',
+        'image_url' => 'https://images.unsplash.com/photo-1678057632872-ba572c4367e4?q=80&w=1043&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'category'  => 'Sora',
         'badge'     => 'Sale',
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-goggles.glb'
     ],
     [
-        'id'        => 9,
-        'name'      => 'Bamboo Desk Organiser',
+        'id'        => 6,
+        'name'      => 'Airpods',
         'desc'      => 'Test',
         'price'     => 52.00,
         'old_price' => null,
-        'image_url' => 'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=80',
+        'image_url' => 'https://images.unsplash.com/photo-1629367494173-c78a56567877?q=80&w=627&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         'category'  => 'Argus',
         'badge'     => null,
-        'model'     =>'models/product.glb'
-    ],
-    [
-        'id'        => 10,
-        'name'      => 'Running Shoes Trail Pro',
-        'desc'      => 'Test',
-        'price'     => 220.00,
-        'old_price' => 260.00,
-        'image_url' => 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80',
-        'category'  => 'Argus',
-        'badge'     => 'Sale',
-        'model'     =>'models/product.glb'
+        'model'     =>'models/product-pods-1.glb'
     ],
 ];
 
@@ -147,7 +114,7 @@ $total = count($products);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment 2 Home</title>
+    <title>Assignment 2 Catalog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <link rel="stylesheet" href="css/main.css">

@@ -1,3 +1,18 @@
+document.addEventListener("DOMContentLoaded", function() {
+    let currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+        let linkPath = link.getAttribute('href');
+        if(currentPath === linkPath){
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        }
+    });
+});
+
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -11,7 +26,7 @@ function initThree(containerId, modelPath) {
     container.innerHTML = "";
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x111111);
+    scene.background = new THREE.Color(0x285f6b);
 
     // Ensure the container has height, If 0, renderer will be invisible.
     const width = container.clientWidth;
