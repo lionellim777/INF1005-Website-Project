@@ -109,7 +109,7 @@
                 ['bi-eye',              'icon-purple','Transparency',       'No hidden fees. No dark patterns. Just honest business.'],
                 ['bi-rocket-takeoff',   'icon-amber', 'Constant Innovation','We never stop pushing. The status quo is our biggest rival.'],
                 ['bi-universal-access', 'icon-pink',  'Accessibility',      'Technology for everyone — inclusive design in everything we do.'],
-                ['bi-hand-thumbs-up',   'icon-cyan',  'Integrity',          'We do the right thing, even when no one's watching.'],
+                ['bi-hand-thumbs-up',   'icon-cyan',  'Integrity',          'We do the right thing, even when no one\'s watching.'],
             ];
             foreach ($vals as $i => $v): ?>
             <div class="col-12 col-md-6 col-lg-4 reveal delay-<?= min($i+1,5) ?>">

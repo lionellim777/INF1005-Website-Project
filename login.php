@@ -20,15 +20,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$username || !$password) {
         $error = 'Please fill in all fields.';
     } else {
-        $result = loginUser($username, $password);
-        if ($result['success']) {
-            $dest = $result['role'] === 'admin'    ? '/admin/index.php'
-                  : ($result['role'] === 'employee' ? '/employee/index.php'
-                  : (filter_var($redirect, FILTER_VALIDATE_URL) ? $redirect : '/index.php'));
-            header('Location: ' . $dest);
-            exit;
-        } else {
-            $error = $result['error'];
+        try {
+            $result = loginUser($username, $password);
+            if ($result['success']) {
+                $dest = $result['role'] === 'admin'    ? '/admin/index.php'
+                      : ($result['role'] === 'employee' ? '/employee/index.php'
+                      : (filter_var($redirect, FILTER_VALIDATE_URL) ? $redirect : '/index.php'));
+                header('Location: ' . $dest);
+                exit;
+            } else {
+                $error = $result['error'];
+            }
+        } catch (Throwable $e) {
+            error_log('Login error: ' . $e->getMessage());
+            $error = 'Login is temporarily unavailable. Please try again later.';
         }
     }
 }

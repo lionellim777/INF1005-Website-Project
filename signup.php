@@ -24,12 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($password !== $confirm)              $errors[] = 'Passwords do not match.';
 
     if (empty($errors)) {
-        $result = registerUser($username, $email, $password, $fullName);
-        if ($result['success']) {
-            header('Location: /login.php?registered=1');
-            exit;
-        } else {
-            $errors[] = $result['error'];
+        try {
+            $result = registerUser($username, $email, $password, $fullName);
+            if ($result['success']) {
+                header('Location: /login.php?registered=1');
+                exit;
+            } else {
+                $errors[] = $result['error'];
+            }
+        } catch (Throwable $e) {
+            error_log('Signup error: ' . $e->getMessage());
+            $errors[] = 'Signup is temporarily unavailable. Please try again later.';
         }
     }
 }

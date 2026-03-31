@@ -10,6 +10,93 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/db.inc.php';
 
+function allowDemoAuthFallback(): bool {
+    // Enabled by default for local development; set ALLOW_DEMO_AUTH_FALLBACK=0 to disable.
+    return getenv('ALLOW_DEMO_AUTH_FALLBACK') !== '0';
+}
+
+function getDemoUsers(): array {
+    // Hash from db/setup.sql for the password "Password1!"
+    $demoHash = '$2y$12$wwTa1eGq8JFwu3/CPdGcLOQ8BbVwv8sn5aDV4wuWNcCzV4vSWSWQ6';
+
+    return [
+        [
+            'id' => 1,
+            'username' => 'admin',
+            'email' => 'admin@pomegranate.com',
+            'password_hash' => $demoHash,
+            'role' => 'admin',
+            'full_name' => 'System Admin',
+            'is_active' => 1,
+        ],
+        [
+            'id' => 2,
+            'username' => 'employee1',
+            'email' => 'employee@pomegranate.com',
+            'password_hash' => $demoHash,
+            'role' => 'employee',
+            'full_name' => 'Alex Chen',
+            'is_active' => 1,
+        ],
+        [
+            'id' => 3,
+            'username' => 'johndoe',
+            'email' => 'john@example.com',
+            'password_hash' => $demoHash,
+            'role' => 'customer',
+            'full_name' => 'John Doe',
+            'is_active' => 1,
+        ],
+        [
+            'id' => 4,
+            'username' => 'janedoe',
+            'email' => 'jane@example.com',
+            'password_hash' => $demoHash,
+            'role' => 'customer',
+            'full_name' => 'Jane Doe',
+            'is_active' => 1,
+        ],
+    ];
+}
+
+function loginWithUserRecord(array $user): array {
+    // Regenerate session ID to prevent fixation
+    session_regenerate_id(true);
+
+    $_SESSION['user_id']   = $user['id'];
+    $_SESSION['username']  = $user['username'];
+    $_SESSION['email']     = $user['email'];
+    $_SESSION['role']      = $user['role'];
+    $_SESSION['full_name'] = $user['full_name'] ?? $user['username'];
+
+    return ['success' => true, 'role' => $user['role']];
+}
+
+function loginWithDemoFallback(string $username, string $password): array {
+    $needle = strtolower(trim($username));
+    if ($needle === '') {
+        return ['success' => false, 'error' => 'Invalid username or password.'];
+    }
+
+    foreach (getDemoUsers() as $user) {
+        $matches = strtolower($user['username']) === $needle || strtolower($user['email']) === $needle;
+        if (!$matches) {
+            continue;
+        }
+        if (!$user['is_active']) {
+            return ['success' => false, 'error' => 'Your account has been suspended.'];
+        }
+        if (!password_verify($password, $user['password_hash'])) {
+            return ['success' => false, 'error' => 'Invalid username or password.'];
+        }
+
+        $_SESSION['demo_mode'] = true;
+        return loginWithUserRecord($user);
+    }
+
+    return ['success' => false, 'error' => 'Invalid username or password.'];
+}
+
 // ── Getters ─────────────────────────────────────────────────
 function isLoggedIn(): bool {
     return isset($_SESSION['user_id']);
@@ -67,34 +154,36 @@ function isAdmin(): bool {
 
 // ── Login / Logout ───────────────────────────────────────────
 function loginUser(string $username, string $password): array {
-    $pdo = getDB();
-    $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role, full_name, is_active FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$username, $username]);
-    $user = $stmt->fetch();
+    try {
+        $pdo = getDB();
+        $stmt = $pdo->prepare("SELECT id, username, email, password_hash, role, full_name, is_active FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $username]);
+        $user = $stmt->fetch();
 
-    if (!$user) {
-        return ['success' => false, 'error' => 'Invalid username or password.'];
+        if (!$user) {
+            return ['success' => false, 'error' => 'Invalid username or password.'];
+        }
+        if (!$user['is_active']) {
+            return ['success' => false, 'error' => 'Your account has been suspended.'];
+        }
+        if (!password_verify($password, $user['password_hash'])) {
+            return ['success' => false, 'error' => 'Invalid username or password.'];
+        }
+
+        $_SESSION['demo_mode'] = false;
+        $result = loginWithUserRecord($user);
+
+        // Update last login
+        $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
+        return $result;
+    } catch (Throwable $e) {
+        error_log("Login DB Error: " . $e->getMessage());
+        if (allowDemoAuthFallback()) {
+            return loginWithDemoFallback($username, $password);
+        }
+
+        return ['success' => false, 'error' => 'Login is temporarily unavailable. Please try again later.'];
     }
-    if (!$user['is_active']) {
-        return ['success' => false, 'error' => 'Your account has been suspended.'];
-    }
-    if (!password_verify($password, $user['password_hash'])) {
-        return ['success' => false, 'error' => 'Invalid username or password.'];
-    }
-
-    // Regenerate session ID to prevent fixation
-    session_regenerate_id(true);
-
-    $_SESSION['user_id']  = $user['id'];
-    $_SESSION['username'] = $user['username'];
-    $_SESSION['email']    = $user['email'];
-    $_SESSION['role']     = $user['role'];
-    $_SESSION['full_name']= $user['full_name'] ?? $user['username'];
-
-    // Update last login
-    $pdo->prepare("UPDATE users SET last_login = NOW() WHERE id = ?")->execute([$user['id']]);
-
-    return ['success' => true, 'role' => $user['role']];
 }
 
 function logoutUser(): void {

@@ -110,10 +110,10 @@ ON DUPLICATE KEY UPDATE name=VALUES(name);
 
 -- Seed users (password = "Password1!" for all)
 INSERT INTO users (username, email, password_hash, role, full_name, is_active) VALUES
-('admin', 'admin@pomegranate.com', '$2y$10$3P9pYhOQCQhEdCTRRiHNAeelFMCN0X.B2VfFVxEfK.TIHYJa4J5a2', 'admin', 'System Admin', 1),
-('employee1', 'employee@pomegranate.com', '$2y$10$3P9pYhOQCQhEdCTRRiHNAeelFMCN0X.B2VfFVxEfK.TIHYJa4J5a2', 'employee', 'Alex Chen', 1),
-('johndoe', 'john@example.com', '$2y$10$3P9pYhOQCQhEdCTRRiHNAeelFMCN0X.B2VfFVxEfK.TIHYJa4J5a2', 'customer', 'John Doe', 1),
-('janedoe', 'jane@example.com', '$2y$10$3P9pYhOQCQhEdCTRRiHNAeelFMCN0X.B2VfFVxEfK.TIHYJa4J5a2', 'customer', 'Jane Doe', 1)
+('admin', 'admin@pomegranate.com', '$2y$12$wwTa1eGq8JFwu3/CPdGcLOQ8BbVwv8sn5aDV4wuWNcCzV4vSWSWQ6', 'admin', 'System Admin', 1),
+('employee1', 'employee@pomegranate.com', '$2y$12$wwTa1eGq8JFwu3/CPdGcLOQ8BbVwv8sn5aDV4wuWNcCzV4vSWSWQ6', 'employee', 'Alex Chen', 1),
+('johndoe', 'john@example.com', '$2y$12$wwTa1eGq8JFwu3/CPdGcLOQ8BbVwv8sn5aDV4wuWNcCzV4vSWSWQ6', 'customer', 'John Doe', 1),
+('janedoe', 'jane@example.com', '$2y$12$wwTa1eGq8JFwu3/CPdGcLOQ8BbVwv8sn5aDV4wuWNcCzV4vSWSWQ6', 'customer', 'Jane Doe', 1)
 ON DUPLICATE KEY UPDATE username=VALUES(username);
 
 -- Seed products
