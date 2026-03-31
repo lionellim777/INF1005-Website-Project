@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/inc/bootstrap.php';
 require_once __DIR__ . '/inc/support.inc.php';
 
 $formData = [
@@ -46,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form_action'] ?? '') === '
 $pageTitle = 'Pomegranate | Contact';
 include __DIR__ . '/inc/page-top.inc.php';
 ?>
+
+|<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <section id="contact-support" class="position-relative py-5">
     <img id="contact-map" src="<?= h(app_url('assets/contact-map-2.png')) ?>" alt="Contact map background"
