@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    session_start();
-}
+// bootstrap now uses our init_session for safety
+require_once __DIR__ . '/init_session.php';
 
 define('APP_ROOT', dirname(__DIR__));
 

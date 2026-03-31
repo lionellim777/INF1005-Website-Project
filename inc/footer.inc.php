@@ -36,8 +36,8 @@
                 <h6 class="fw-semibold mb-3 text-white">Company</h6>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="<?= h(app_url('index.php')) ?>" class="text-white-50 text-decoration-none small">About</a></li>
-                    <li class="mb-2"><a href="<?= h(app_url('index.php#contact-support')) ?>" class="text-white-50 text-decoration-none small">Feedback</a></li>
-                    <li class="mb-2"><a href="<?= h(app_url('index.php#contact-support')) ?>" class="text-white-50 text-decoration-none small">Contact</a></li>
+                    <li class="mb-2"><a href="<?= h(app_url('contact.php')) ?>" class="text-white-50 text-decoration-none small">Feedback</a></li>
+                    <li class="mb-2"><a href="<?= h(app_url('contact.php')) ?>" class="text-white-50 text-decoration-none small">Contact</a></li>
                 </ul>
             </div>
         </div>
@@ -51,7 +51,7 @@
             <div class="d-flex gap-3">
                 <a href="<?= h(app_url('index.php')) ?>" class="text-white-50 text-decoration-none small">Privacy</a>
                 <a href="<?= h(app_url('index.php')) ?>" class="text-white-50 text-decoration-none small">Terms</a>
-                <a href="<?= h(app_url('index.php#contact-support')) ?>" class="text-white-50 text-decoration-none small">Cookies</a>
+                <a href="<?= h(app_url('contact.php')) ?>" class="text-white-50 text-decoration-none small">Cookies</a>
             </div>
         </div>
     </div>
