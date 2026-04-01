@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/inc/bootstrap.php';
+require_once dirname(__DIR__). '/inc/bootstrap.php';
 
 $amount = $_POST['amount'] ?? 0;
 if(!$amount){ 

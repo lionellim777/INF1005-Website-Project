@@ -14,7 +14,7 @@
         <!-- Catalog and About Page -->
           <div class="col-6 col-md-2 ms-auto">
             <ul class="list-unstyled">
-              <li class="mb-2"><a href="/catalog.php" class="text-white-50 text-decoration-none small">Catalog</a></li>
+              <li class="mb-2"><a href="/shop/catalog.php" class="text-white-50 text-decoration-none small">Catalog</a></li>
               <li class="mb-2"><a href="/about.php" class="text-white-50 text-decoration-none small">About us</a></li>
             </ul>
           </div>

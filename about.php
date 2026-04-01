@@ -73,7 +73,7 @@ include __DIR__ . '/inc/page-top.inc.php';
         <div class="container">
             <h2 class="fw-bold">Ready to Explore?</h2>
             <p class="mb-4">Check out our latest collection of premium tech.</p>
-            <button onclick="window.location.href='catalog.php'" class="btn btn-outline-light btn-lg px-5">Shop Now</button>
+            <button onclick="window.location.href='/shop/catalog.php'" class="btn btn-outline-light btn-lg px-5">Shop Now</button>
         </div>
     </section>
 

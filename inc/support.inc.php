@@ -19,26 +19,6 @@ function support_inquiry_types(): array
     return ['Contact', 'Feedback'];
 }
 
-function normalize_single_line(string $value): string
-{
-    $value = trim($value);
-    $value = strip_tags($value);
-    $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
-
-    return trim($value);
-}
-
-function normalize_multiline(string $value): string
-{
-    $value = trim($value);
-    $value = strip_tags($value);
-    $value = str_replace(["\r\n", "\r"], "\n", $value);
-    $value = preg_replace("/[ \t]+\n/", "\n", $value) ?? $value;
-    $value = preg_replace("/\n{3,}/", "\n\n", $value) ?? $value;
-
-    return trim($value);
-}
-
 function sanitize_contact_payload(array $source): array
 {
     return [

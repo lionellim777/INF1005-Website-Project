@@ -33,6 +33,14 @@ function normalize_slashes(string $path): string
     return str_replace('\\', '/', $path);
 }
 
+function strip_leading_slash(string $path): string {
+    $path = trim($path);
+    if (str_starts_with($path, '/')) {
+        return substr($path, 1);
+    }
+    return $path;
+}
+
 function app_base_path(): string
 {
     static $basePath;
@@ -44,8 +52,12 @@ function app_base_path(): string
     $scriptName = normalize_slashes($_SERVER['SCRIPT_NAME'] ?? '');
     $directory = normalize_slashes(dirname($scriptName));
 
-    if (str_ends_with($directory, '/admin')) {
-        $directory = substr($directory, 0, -6);
+    $subdirs = ['/admin', '/shop', '/account', '/employee'];
+    foreach ($subdirs as $subdir) {
+        if (str_ends_with($directory, $subdir)) {
+            $directory = substr($directory, 0, -strlen($subdir));
+            break;
+        }
     }
 
     if ($directory === '/' || $directory === '.') {

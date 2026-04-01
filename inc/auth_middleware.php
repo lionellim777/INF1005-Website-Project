@@ -10,7 +10,7 @@ function require_login() {
         // Optional UX boost: Store where they were trying to go so the login page can redirect them back later
         $_SESSION['redirect_to'] = $_SERVER['REQUEST_URI'];
         
-        header("Location: /login.php");
+        header("Location: /account/login.php");
         exit;
     }
 }

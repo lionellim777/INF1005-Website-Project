@@ -3,6 +3,37 @@
    Shared by employee + admin dashboards
    ============================================================ */
 
+:root {
+    /* Custom Brand Palette */
+    --bg-primary: #333C6B;     /* Main background (Deep Blue/Purple) */
+    --bg-secondary: #335F6A;   /* Sidebar background (Teal) */
+    --bg-card: #282f54;        /* Slightly darker blue for cards/tables to pop */
+    --bg-card-hover: #3e4882;  /* Hover state for cards */
+    
+    /* High contrast text - Pure White and Light Greys */
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #cbd5e1;
+    
+    /* Accents and Borders */
+    --border: rgba(255, 255, 255, 0.15);
+    --brand-primary: #285f6b;
+    --grad-primary: linear-gradient(135deg, #437885, #335F6A);
+    
+    /* Utility Colors */
+    --cyan: #22d3ee;
+    --purple: #a78bfa;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    
+    /* UI properties */
+    --radius: 8px;
+    --radius-lg: 16px;
+    --transition: all 0.2s ease-in-out;
+    --glow-cyan: 0 0 12px rgba(34,211,238,0.4);
+}
+
 /* ── Layout ─────────────────────────────────────────────────── */
 .dash-wrapper {
     display: flex;

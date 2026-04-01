@@ -1,0 +1,142 @@
+/* ============================================================
+   Admin Dashboard — Layout & Component Styles (Dark Mode Sync)
+   ============================================================ */
+
+.admin-body .card {
+    transform: none !important;
+    transition: box-shadow 0.15s ease;
+    background-color: var(--bg-card);
+}
+.admin-body .card:hover {
+    transform: none !important;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.2) !important;
+}
+.admin-body .card .bi {
+    transform: none !important;
+    transition: none !important;
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 240px;
+    min-width: 240px;
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    min-height: 100vh;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.admin-nav-link {
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    display: block;
+}
+
+.admin-nav-link:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.admin-nav-link.active {
+    color: var(--text-primary);
+    background-color: rgba(40, 102, 110, 0.2); /* Brand tint */
+    font-weight: 600;
+}
+
+.admin-nav-link-danger {
+    color: var(--red) !important;
+}
+.admin-nav-link-danger:hover {
+    background-color: rgba(248, 113, 113, 0.12);
+}
+
+.admin-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-topbar {
+    background-color: rgba(51, 60, 107, 0.85); /* Matches new bg-primary (#333C6B) */
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    min-height: 68px;
+}
+
+.admin-topbar .page-title {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.admin-topbar .page-text {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.stat-card-warning { border-left: 4px solid var(--amber) !important; }
+.stat-card-active { border-left: 4px solid var(--brand-primary) !important; }
+.stat-card-danger { border-left: 4px solid var(--red) !important; }
+
+.admin-flash { max-width: 720px; }
+
+.admin-body .table-hover > tbody > tr:hover > * {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+}
+
+.admin-body .form-control:focus,
+.admin-body .form-select:focus {
+    border-color: var(--cyan);
+    box-shadow: var(--glow-cyan);
+}
+
+.admin-body .badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.6em;
+}
+
+.admin-body .progress {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+@media (max-width: 767.98px) {
+    .admin-layout { flex-direction: column; }
+    .admin-sidebar {
+        width: 100%;
+        min-width: unset;
+        height: auto;
+        min-height: unset;
+        position: static;
+    }
+    .admin-topbar { position: static; }
+    .admin-body .table-responsive { font-size: 0.85rem; }
+}

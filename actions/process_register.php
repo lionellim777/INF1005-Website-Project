@@ -1,6 +1,6 @@
 <?php
-require_once 'inc/auth_middleware.php';
-require_once 'inc/security_utils.php';
+require_once dirname(__DIR__) . '/inc/auth_middleware.php';
+require_once dirname(__DIR__) . '/inc/security_utils.php';
 
 // Only allow POST requests
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 $fname = sanitize_input($_POST["fname"] ?? '');
 $lname = sanitize_input($_POST["lname"] ?? '');
 $email = sanitize_input($_POST["email"] ?? '');
-$password = $_POST["pwd"] ?? ''; // Don't htmlspecialchars passwords!
+$password = $_POST["password"] ?? $_POST["pwd"] ?? '';
 $pwd_confirm = $_POST["pwd_confirm"] ?? '';
 
 $errorMsg = "";
@@ -64,7 +64,7 @@ if (empty($errorMsg)) {
 if (!empty($errorMsg)) {
     global $session;
     $session->set_flashdata('error_msg', $errorMsg);
-    header("Location: /signup.php");
+    header("Location: /account/signup.php");
     exit;
 }
 ?>

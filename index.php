@@ -68,7 +68,7 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 <h5 class="card-title fw-bold"><?= h($product['name']) ?></h5>
                                 <p class="card-text text-truncate"><?= h($product['desc']) ?></p>
                                 <h6 class="text-success mb-3">$<?= number_format($product['price'], 2) ?></h6>
-                                <button class="btn btn-outline-dark mt-auto" onclick="window.location.href='catalog.php'">View in Catalog</button>
+                                <button class="btn btn-outline-dark mt-auto" onclick="window.location.href='/shop/catalog.php'">View in Catalog</button>
                             </div>
                         </div>
                     </div>

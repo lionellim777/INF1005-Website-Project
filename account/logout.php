@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/inc/bootstrap.php';
+require_once dirname(__DIR__) . '/inc/bootstrap.php';
 
 // If using Zebra Session, calling stop() safely destroys the session
 if (isset($session)) {

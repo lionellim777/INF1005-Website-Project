@@ -193,7 +193,6 @@ include __DIR__ . '/inc/page-top.inc.php';
                                 id="message"
                                 name="message"
                                 rows="5"
-                                minlength="10"
                                 maxlength="2000"
                                 data-char-count="message-count"
                                 class="form-control<?= isset($errors['message']) ? ' is-invalid' : '' ?>"
