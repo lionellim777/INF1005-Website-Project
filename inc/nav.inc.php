@@ -23,7 +23,11 @@
           <li class="nav-item">
             <a class="nav-link" href="/about.php">About</a>
           </li>
- 
+          <li class="nav-item ms-2">
+            <a class="nav-link position-relative" href="/cart.php">
+                <i class="bi bi-bag"></i>
+            </a>
+          </li>
           <!-- Dropdown example -->
           <!-- <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Resources</a>

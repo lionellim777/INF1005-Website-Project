@@ -13,6 +13,9 @@ footer {
 
 body{
     font-family: 'Urbanist', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .carousel-item img{

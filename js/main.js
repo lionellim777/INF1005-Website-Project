@@ -82,6 +82,29 @@ productModal.addEventListener("shown.bs.modal",function(event){
 
     initThree("modelShowcase", button.dataset.model);
     renderReviews(button.dataset.id);
+
+    const addBtn = productModal.querySelector('.modal-btn');
+    addBtn.onclick = ()=>{
+        const qty = parseInt(document.getElementById('qtyValue').textContent);
+        Cart.add({
+            id: button.dataset.id,
+            name: button.dataset.name,
+            price: parseFloat(button.dataset.price),
+            image: button.dataset.image,
+            qty: qty
+        });
+        addBtn.textContent = '✓ Added!';
+    };
+
+    document.getElementById('qtyValue').textContent = 1;
+    document.getElementById('qtyMinus').onclick = () =>{
+        const el = document.getElementById('qtyValue');
+        if(parseInt(el.textContent) > 1)el.textContent = parseInt(el.textContent) - 1;
+    };
+    document.getElementById('qtyPlus').onclick = () =>{
+        const el = document.getElementById('qtyValue');
+        el.textContent = parseInt(el.textContent) + 1;
+    };
 });
 
 productModal.addEventListener("hidden.bs.modal",function(){

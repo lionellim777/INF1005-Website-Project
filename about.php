@@ -79,7 +79,7 @@
                 </div>
             </div>
         </div>
-    <section>
+    </section>
 
     <section class="py-5 text-center bg-dark text-white animated">
         <div class="container">

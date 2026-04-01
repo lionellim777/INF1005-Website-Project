@@ -25,22 +25,9 @@
         </div>        
  
         <div class="col-6 col-md-2 ms-auto">
-          <h6 class="fw-semibold mb-3 text-white">Catalog</h6>
           <ul class="list-unstyled">
-            <li class="mb-2"><a href="/features" class="text-white-50 text-decoration-none small">Latest</a></li>
-            <li class="mb-2"><a href="/pricing" class="text-white-50 text-decoration-none small">Best sellers</a></li>
-            <li class="mb-2"><a href="/changelog"class="text-white-50 text-decoration-none small">Latest Reviews</a></li>
-            <li class="mb-2"><a href="/status"class="text-white-50 text-decoration-none small">Status</a></li>
-          </ul>
-        </div>
- 
-        <div class="col-6 col-md-2">
-          <h6 class="fw-semibold mb-3 text-white">Company</h6>
-          <ul class="list-unstyled">
-            <li class="mb-2"><a href="/about" class="text-white-50 text-decoration-none small">About</a></li>
-            <li class="mb-2"><a href="/blog" class="text-white-50 text-decoration-none small">Blog</a></li>
-            <li class="mb-2"><a href="/careers"class="text-white-50 text-decoration-none small">Careers</a></li>
-            <li class="mb-2"><a href="/contact"class="text-white-50 text-decoration-none small">Contact</a></li>
+            <li class="mb-2"><a href="/catalog.php" class="text-white-50 text-decoration-none small">Catalog</a></li>
+            <li class="mb-2"><a href="/about.php" class="text-white-50 text-decoration-none small">About us</a></li>
           </ul>
         </div>
       </div>
@@ -51,11 +38,6 @@
         <p class="text-white small mb-0">
           &copy; <span id="year"></span> Pomegranate, Inc. All rights reserved.
         </p>
-        <div class="d-flex gap-3">
-          <a href="/privacy" class="text-white-50 text-decoration-none small">Privacy</a>
-          <a href="/terms"class="text-white-50 text-decoration-none small">Terms</a>
-          <a href="/cookies"class="text-white-50 text-decoration-none small">Cookies</a>
-        </div>
       </div>
     </div>
  
