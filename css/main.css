@@ -47,3 +47,98 @@ body{
 #contact-submit{
     background-color: #28666e
 }
+
+/* ============================================================
+   AUTH & DASHBOARD STYLES
+   ============================================================ */
+
+/* Primary action buttons */
+.btn-pomegranate {
+    background-color: #28666e;
+    color: #fff;
+    border: none;
+}
+.btn-pomegranate:hover,
+.btn-pomegranate:focus {
+    background-color: #1e4f55;
+    color: #fff;
+}
+
+/* Card hover lift */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Dashboard stat cards */
+.card .bi {
+    transition: transform 0.2s ease;
+}
+.card:hover .bi {
+    transform: scale(1.1);
+}
+
+/* Nav tabs — match brand colour */
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    padding: 0.65rem 1.15rem;
+    font-weight: 500;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+.nav-tabs .nav-link:hover {
+    color: #28666e;
+    border-bottom-color: rgba(40, 102, 110, 0.3);
+}
+.nav-tabs .nav-link.active {
+    color: #28666e;
+    background: transparent;
+    border-bottom-color: #28666e;
+}
+
+/* User dropdown in navbar */
+#userDropdown {
+    border: 1px solid rgba(255,255,255,0.2);
+}
+#userDropdown:hover {
+    border-color: rgba(255,255,255,0.4);
+}
+.dropdown-menu {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* Form focus ring — brand colour */
+.form-control:focus,
+.form-select:focus {
+    border-color: #28666e;
+    box-shadow: 0 0 0 0.2rem rgba(40, 102, 110, 0.25);
+}
+
+/* Password strength bar */
+#pwStrengthBar {
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Activity / session list items */
+.list-group-item {
+    transition: background-color 0.15s ease;
+}
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+    .nav-tabs .nav-link {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
+}

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/auth/auth_helper.php';
+initSession();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
