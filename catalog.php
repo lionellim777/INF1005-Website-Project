@@ -48,7 +48,7 @@ $total = count($products);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assignment 2 Catalog</title>
+    <title>Pomegranate | Catalog</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" 
     integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <link rel="stylesheet" href="css/main.css">
@@ -63,11 +63,11 @@ $total = count($products);
     <?php
         include "inc/nav.inc.php";
     ?>
-/***
+<!--
  * The above code can all be compounded using page-top.inc.php
  * and is done so for the rest of the code but due to three.js relying on the product array
  * I've left it as is for now and remains the only page not to use page-top.inc.php.
- */
+-->
 
     <div class="hero mb-0">
         <img src="assets/esmeralda.jpg" class="hero-img" alt="Esmeralda">
@@ -221,6 +221,6 @@ $total = count($products);
     <script>
         const ALL_REVIEWS = <?=json_encode($all_reviews)?>;
     </script>
-    <script defer type="module" src="js/main.js"></script>
+    <script defer type="module" src="js/catalog-3d.js"></script>
 </body>
 </html>

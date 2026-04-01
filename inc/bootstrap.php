@@ -5,6 +5,11 @@ declare(strict_types=1);
 // bootstrap now uses our init_session for safety
 require_once __DIR__ . '/init_session.php';
 
+// Fixed System Roles
+define('ROLE_ADMIN', 'admin');
+define('ROLE_EMPLOYEE', 'employee');
+define('ROLE_USER', 'user');
+
 define('APP_ROOT', dirname(__DIR__));
 
 function app_config(): array

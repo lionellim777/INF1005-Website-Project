@@ -1,6 +1,8 @@
 <?php 
 
-require_once __DIR__ . '/inc/bootstrap.php'; 
+require_once __DIR__ . '/inc/bootstrap.php';
+
+$pageTitle = "Pomegranate | About Us";
 include __DIR__ . '/inc/page-top.inc.php';
 
 ?>

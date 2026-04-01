@@ -1,0 +1,70 @@
+.navbar { background-color: #285f6b !important; }
+footer { background-color: #285f6b !important; }
+
+body {
+    font-family: 'Urbanist', sans-serif;
+    background-color: #f6f8fb;
+    color: #16313d;
+}
+
+.carousel-item img {
+    height: 90vh; width: 100%; object-fit: cover; object-position: center; filter: brightness(0.45);
+}
+.carousel-caption { top: 50%; bottom: auto; transform: translateY(-50%); }
+.carousel-caption h5 { font-size: 3rem; font-weight: 700; color: #ffffff; }
+.carousel-caption p { color: rgba(255, 255, 255, 0.75); font-style: italic; font-size: 1.05rem; }
+
+#contact-map {
+    object-fit: cover;
+    object-position: center;
+    filter: saturate(0.9);
+}
+
+#contact-container { min-height: 600px; }
+#contact-submit { background-color: #28666e; }
+
+.support-eyebrow {
+    display: inline-block; padding: 0.35rem 0.8rem; border-radius: 999px;
+    background: rgba(40, 102, 110, 0.12); color: #28666e; font-size: 0.8rem;
+    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+}
+
+.support-sidecard, .support-form-card {
+    border-radius: 1.5rem; padding: 2rem; box-shadow: 0 20px 60px rgba(9, 39, 58, 0.12);
+}
+
+.support-sidecard {
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.94), rgba(237, 244, 247, 0.95));
+    backdrop-filter: blur(8px);
+}
+
+.support-form-card { background-color: #ffffff; }
+
+.support-policy-note {
+    border-radius: 1rem; padding: 0.95rem 1rem;
+    background: rgba(40, 102, 110, 0.08); color: #325260; font-size: 0.95rem;
+}
+
+.support-feature-list { display: grid; gap: 1rem; }
+.support-feature { display: flex; gap: 0.9rem; align-items: center; color: #325260; }
+.support-feature i {
+    display: inline-flex; justify-content: center; align-items: center;
+    width: 2.3rem; height: 2.3rem; border-radius: 999px;
+    background-color: rgba(40, 102, 110, 0.12); color: #28666e;
+}
+
+.support-honeypot { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+.form-control, .form-select {
+    border-radius: 0.9rem; padding: 0.85rem 1rem; border-color: rgba(22, 49, 61, 0.16);
+}
+
+.form-text { color: #5d7682; }
+.char-count { flex-shrink: 0; font-variant-numeric: tabular-nums; font-weight: 600; color: #28666e; }
+.btn { border-radius: 999px; }
+
+@media (max-width: 991px) { .carousel-item img { height: 70vh; } }
+@media (max-width: 767px) {
+    .carousel-caption h5 { font-size: 2.25rem; }
+    .support-sidecard, .support-form-card { padding: 1.5rem; }
+}

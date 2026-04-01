@@ -38,7 +38,13 @@ if (empty($email) || empty($password)) {
             $_SESSION['role'] = $user['role']; // 'user', 'employee', or 'admin'
             
             // Redirect to the homepage or dashboard
-            header("Location: /index.php");
+            $role = strtolower($user['role']);
+            if (in_array($role, ['admin', 'employee'])) {
+                header("Location: /{$role}/index.php");
+            } else {
+                header("Location: /index.php"); // Fallback for customers
+            }
+            exit;
             exit;
         } else {
             $errorMsg = "Incorrect email or password.";

@@ -48,7 +48,8 @@ $pageTitle = 'Pomegranate | Contact';
 include __DIR__ . '/inc/page-top.inc.php';
 ?>
 
-|<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="/css/form.css">;
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <section id="contact-support" class="position-relative py-5">
     <img id="contact-map" src="<?= h(app_url('assets/contact-map-2.png')) ?>" alt="Contact map background"
