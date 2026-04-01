@@ -5,6 +5,8 @@
     integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
     crossorigin="anonymous">
 </script>
-<script defer src="<?= h(app_url('js/main.js')) ?>"></script>
+<script
+    defer src="<?= h(app_url('js/main.js')) ?>">
+</script>
 </body>
 </html>

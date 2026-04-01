@@ -31,6 +31,21 @@ $role = $_SESSION['role'] ?? 'user';
           <li class="nav-item">
             <a class="nav-link" href="/contact.php">Contact</a>
           </li>
+          <li class="nav-item ms-2">
+            <a class="nav-link position-relative" href="/cart.php">
+                <i class="bi bi-bag"></i>
+            </a>
+          </li>
+          <!-- Dropdown example -->
+          <!-- <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Resources</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="/docs">Documentation</a></li>
+              <li><a class="dropdown-item" href="/blog">Blog</a></li>
+              <li><hr class="dropdown-divider" /></li>
+              <li><a class="dropdown-item" href="/support">Support</a></li>
+            </ul>
+          </li> -->
         </ul>
  
         <div class="d-flex align-items-center gap-3">

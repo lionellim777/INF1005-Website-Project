@@ -19,6 +19,13 @@ body { font-family: 'Urbanist', sans-serif; }
     background: #111; height: 200px; overflow: hidden;
     position: relative; display: flex; align-items: center; justify-content: center;
 }
+
+body{
+    font-family: 'Urbanist', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 .hero-img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
 .hero-overlay { z-index: 2; }
 
@@ -46,4 +53,5 @@ body { font-family: 'Urbanist', sans-serif; }
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
 .animated { animation: fadeInUp 1.0s ease forwards; opacity: 0; }

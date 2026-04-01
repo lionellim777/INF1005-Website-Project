@@ -1,3 +1,18 @@
+document.addEventListener("DOMContentLoaded", function() {
+    let currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        link.removeAttribute('aria-current');
+        let linkPath = link.getAttribute('href');
+        if(currentPath === linkPath){
+            link.classList.add('active');
+            link.setAttribute('aria-current', 'page');
+        }
+    });
+});
+
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -67,13 +82,29 @@ productModal.addEventListener("shown.bs.modal",function(event){
 
     initThree("modelShowcase", button.dataset.model);
     renderReviews(button.dataset.id);
-});
 
-productModal.addEventListener("hidden.bs.modal",function(){
-    if(renderer){
-        renderer.dispose();
-        scene.clear();
-    }
+    const addBtn = productModal.querySelector('.modal-btn');
+    addBtn.onclick = ()=>{
+        const qty = parseInt(document.getElementById('qtyValue').textContent);
+        Cart.add({
+            id: button.dataset.id,
+            name: button.dataset.name,
+            price: parseFloat(button.dataset.price),
+            image: button.dataset.image,
+            qty: qty
+        });
+        addBtn.textContent = '✓ Added!';
+    };
+
+    document.getElementById('qtyValue').textContent = 1;
+    document.getElementById('qtyMinus').onclick = () =>{
+        const el = document.getElementById('qtyValue');
+        if(parseInt(el.textContent) > 1)el.textContent = parseInt(el.textContent) - 1;
+    };
+    document.getElementById('qtyPlus').onclick = () =>{
+        const el = document.getElementById('qtyValue');
+        el.textContent = parseInt(el.textContent) + 1;
+    };
 });
 
 const grid = document.getElementById('productGrid');
