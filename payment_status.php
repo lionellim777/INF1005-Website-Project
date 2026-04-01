@@ -1,7 +1,6 @@
 <?php
 $status = $_GET['status'] ?? 'unknown';
 $reference = $_GET['reference'] ?? '';
-$success = $status === 'completed';
 ?>
 <!DOCTYPE html>
 <html lang="en">
