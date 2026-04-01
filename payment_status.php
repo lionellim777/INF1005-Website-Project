@@ -27,7 +27,7 @@ $success = $status === 'completed';
             </script>
         <?php else: ?>
             <h4 class="fw-bold mt-3">Payment Failed</h4>
-            <p class="text-muted">Something went wrong. Please try again.</p>
+            <p class="text-muted">Status: <strong><?= htmlspecialchars($status) ?></strong>. Please try again.</p>
             <a href="/cart.php" class="btn btn-dark mt-2">Back to Cart</a>
         <?php endif; ?>
     </div>
