@@ -1,6 +1,8 @@
 <?php
 $status = $_GET['status'] ?? 'unknown';
 $reference = $_GET['reference'] ?? '';
+$success = $status === 'completed';
+error_log("HitPay redirect params: " . print_r($_GET, true));
 ?>
 <!DOCTYPE html>
 <html lang="en">

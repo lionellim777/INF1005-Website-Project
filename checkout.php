@@ -20,7 +20,8 @@ curl_setopt_array($ch, [
     CURLOPT_POSTFIELDS => json_encode([
         'amount' => number_format($amount, 2, '.', ''),
         'currency'=> 'SGD',
-        'redirect_url'=> 'http://localhost:8000/payment_status.php',
+        'redirect_url'=> 'http://pomeshop.duckdns.org/payment_status.php',
+        'webhook' => 'http://pomeshop.duckdns.org/webhook.php',
         'purpose' => 'Pomegranate Order - Test',
     ]),
     CURLOPT_SSL_VERIFYPEER => false,
@@ -33,6 +34,7 @@ if(!empty($response['url'])){
     header('Location: ' . $response['url']);
     exit;
 }else{
-    echo "Error creating payment: " . json_encode($response);
+    header('Location: /payment_status.php?status=failed');
+    exit;
 }
 ?>
