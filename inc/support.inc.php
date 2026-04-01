@@ -19,15 +19,34 @@ function support_inquiry_types(): array
     return ['Contact', 'Feedback'];
 }
 
+function normalize_single_line(string $value): string
+{
+    $value = trim($value);
+    $value = strip_tags($value);
+    $value = preg_replace('/\s+/u', ' ', $value) ?? $value;
+
+    return trim($value);
+}
+
+function normalize_multiline(string $value): string
+{
+    $value = trim($value);
+    $value = strip_tags($value);
+    $value = str_replace(["\r\n", "\r"], "\n", $value);
+    $value = preg_replace("/[ \t]+\n/", "\n", $value) ?? $value;
+    $value = preg_replace("/\n{3,}/", "\n\n", $value) ?? $value;
+
+    return trim($value);
+}
+
 function sanitize_contact_payload(array $source): array
 {
-    // Now cleanly relying on security_utils.php
     return [
         'inquiry_type' => normalize_single_line((string) ($source['inquiry_type'] ?? '')),
-        'name'         => normalize_single_line((string) ($source['name'] ?? '')),
-        'email'        => strtolower(normalize_single_line((string) ($source['email'] ?? ''))),
-        'subject'      => normalize_single_line((string) ($source['subject'] ?? '')),
-        'message'      => normalize_multiline((string) ($source['message'] ?? '')),
+        'name' => normalize_single_line((string) ($source['name'] ?? '')),
+        'email' => strtolower(normalize_single_line((string) ($source['email'] ?? ''))),
+        'subject' => normalize_single_line((string) ($source['subject'] ?? '')),
+        'message' => normalize_multiline((string) ($source['message'] ?? '')),
     ];
 }
 
@@ -175,7 +194,6 @@ function validate_mail_config(array $mailConfig): ?string
 
 function build_customer_confirmation_html(array $payload): string
 {
-    // Assuming h() is defined in bootstrap.php. If not, swap these with htmlspecialchars()
     $siteName = h((string) (app_config()['site']['name'] ?? 'Pomegranate'));
     $inquiryType = h($payload['inquiry_type']);
     $name = h($payload['name']);

@@ -12,19 +12,8 @@
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
 .sidebar {
-    width: 260px;
-    flex-shrink: 0;
-    background: var(--bg-secondary);
+    background: var(--bg-secondary); /* Now white */
     border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 100vh;
-    z-index: 200;
-    transition: transform .3s ease;
-    overflow-y: auto;
 }
 
 .sidebar::-webkit-scrollbar { width: 4px; }
@@ -80,56 +69,18 @@
 }
 
 .sidebar-link {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-    padding: .65rem 1.25rem;
     color: var(--text-secondary);
-    text-decoration: none;
-    font-size: .88rem;
-    font-weight: 500;
-    border-radius: 0;
-    transition: var(--transition);
-    position: relative;
 }
-
-.sidebar-link i {
-    font-size: 1rem;
-    flex-shrink: 0;
-    width: 20px;
-    text-align: center;
-}
-
 .sidebar-link:hover {
-    color: var(--text-primary);
-    background: rgba(255,255,255,.04);
+    color: var(--brand-primary);
+    background: rgba(40, 102, 110, 0.05);
 }
-
 .sidebar-link.active {
-    color: var(--cyan);
-    background: rgba(34,211,238,.08);
+    color: var(--brand-primary);
+    background: rgba(40, 102, 110, 0.1); /* Soft teal background */
 }
-
 .sidebar-link.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--grad-primary);
-    border-radius: 0 2px 2px 0;
-}
-
-.sidebar-link .badge-count {
-    margin-left: auto;
-    background: var(--grad-primary);
-    color: #fff;
-    font-size: .65rem;
-    font-weight: 700;
-    padding: .15rem .45rem;
-    border-radius: 50px;
-    line-height: 1.4;
+    background: var(--brand-primary);
 }
 
 .sidebar-footer {
@@ -186,17 +137,8 @@
 }
 
 .dash-topbar {
-    background: rgba(5,10,20,.85);
-    backdrop-filter: blur(20px);
+    background: rgba(246, 248, 251, 0.9); /* Translucent light background */
     border-bottom: 1px solid var(--border);
-    padding: .85rem 1.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
 }
 
 .dash-topbar .page-title {
@@ -321,16 +263,9 @@
 }
 
 .dash-table th {
-    background: rgba(255,255,255,.03);
-    padding: .75rem 1rem;
-    font-size: .72rem;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    white-space: nowrap;
+    background: rgba(40, 102, 110, 0.03); /* Very faint teal */
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border);
 }
 
 .dash-table td {
@@ -344,7 +279,7 @@
 .dash-table tr:last-child td { border-bottom: none; }
 
 .dash-table tr:hover td {
-    background: rgba(255,255,255,.02);
+    background: rgba(40, 102, 110, 0.02);
     color: var(--text-primary);
 }
 

@@ -1,299 +1,339 @@
 <?php
-// 1. Boot the engine and secure the page
-require_once dirname(__DIR__) . '/inc/bootstrap.php';
-require_once dirname(__DIR__) . '/inc/auth_middleware.php';
+/**
+ * Admin Dashboard – Overview
+ * Shows summary stats: total products, low-stock items, pending orders, total users.
+ * Access: role_id >= 4 (admin). Employees are redirected to orders page.
+ *
+ */
 
-// ONLY Admins can view this dashboard
-require_role([ROLE_ADMIN]);
+require_once __DIR__ . '/../auth/auth_helper.php';
+initSession();
 
-$stats = ['total_users'=>0, 'new_users_today'=>0, 'total_revenue'=>0, 'total_orders'=>0, 'total_products'=>0, 'active_employees'=>0];
-$recentUsers  = [];
-$revenueData  = [];
-$orderStats   = [];
-
-// Safely extract the logged-in admin's info from Zebra Session
-$admin_fname = $_SESSION['fname'] ?? 'Admin';
-$admin_initial = strtoupper(substr($admin_fname, 0, 1));
-
-// 2. Fetch Dashboard Analytics from MySQLi
-if (isset($db_conn)) {
-    mysqli_report(MYSQLI_REPORT_OFF);
-
-    $res = $db_conn->query("SELECT COUNT(*) AS c FROM users");
-    if ($res) $stats['total_users'] = $res->fetch_assoc()['c'];
-
-    $res = $db_conn->query("SELECT COUNT(*) AS c FROM products");
-    if ($res) $stats['total_products'] = $res->fetch_assoc()['c'];
-
-    $res = $db_conn->query("SELECT COUNT(*) AS c FROM users WHERE role IN ('employee','admin')");
-    if ($res) $stats['active_employees'] = $res->fetch_assoc()['c'];
-
-    // THE FIX: Added created_at back to the SELECT query!
-    $res = $db_conn->query("SELECT id, fname, lname, email, role, created_at FROM users ORDER BY id DESC LIMIT 6");
-    if ($res) { while ($row = $res->fetch_assoc()) $recentUsers[] = $row; }
+// Employees (role 3) get redirected straight to orders — they have no business on the overview
+// Admins (role 4) land here normally
+$currentSessionUser = currentUser();
+if (!$currentSessionUser) {
+    // Not logged in at all
+    header('Location: ' . appUrl('/auth/login.php'));
+    exit;
 }
+if ((int)$currentSessionUser['role_id'] === 3) {
+    // Employee — send to orders page
+    header('Location: ' . appUrl('/admin/orders.php'));
+    exit;
+}
+// Anything below role 3 gets blocked
+requireRole(4);
 
-// 3. Fallback Mock Data 
-if (empty($recentUsers)) {
-    $stats['total_users']      = $stats['total_users'] ?: 12;
-    $stats['total_products']   = $stats['total_products'] ?: 24;
-    $stats['active_employees'] = $stats['active_employees'] ?: 4;
+$isOffline = isOfflineMode();
+$pdo       = $isOffline ? null : getDBConnection(); // Problem
 
-    $recentUsers = [
-        ['id'=>1, 'fname'=>'Admin','lname'=>'User', 'email'=>'admin@example.com', 'role'=>'admin', 'created_at'=>date('Y-m-d H:i:s')],
+// ============================================================
+// FETCH STATS
+// ============================================================
+
+if ($isOffline) {
+    // Offline demo mode: return sensible dummy numbers
+    $totalProducts  = 6;
+    $lowStockCount  = 2;   // products where stock_quantity < 5
+    $pendingOrders  = 3;
+    $totalUsers     = count($_SESSION['offline_users'] ?? []);
+    $recentOrders   = [
+        ['order_id' => 1003, 'status' => 'processing', 'total_amount' => 199.99, 'created_at' => '2025-03-10 09:00:00', 'first_name' => 'John',  'last_name' => 'Doe'],
+        ['order_id' => 1002, 'status' => 'shipped',    'total_amount' => 849.00, 'created_at' => '2025-02-20 14:15:00', 'first_name' => 'John',  'last_name' => 'Doe'],
+        ['order_id' => 1005, 'status' => 'shipped',    'total_amount' => 1299.99,'created_at' => '2025-03-05 16:45:00', 'first_name' => 'Test',  'last_name' => 'User One'],
+        ['order_id' => 1001, 'status' => 'delivered',  'total_amount' => 1299.99,'created_at' => '2025-01-15 10:30:00', 'first_name' => 'John',  'last_name' => 'Doe'],
+        ['order_id' => 1004, 'status' => 'delivered',  'total_amount' => 549.00, 'created_at' => '2025-02-01 11:00:00', 'first_name' => 'Test',  'last_name' => 'User Two'],
     ];
+    $lowStockItems = [
+        ['name' => 'Pomegranate Wireless Buds', 'stock_quantity' => 3, 'category' => 'Accessories'],
+        ['name' => 'Pomegranate Watch SE',      'stock_quantity' => 1, 'category' => 'Wearables'],
+    ];
+} else {
+    // Live DB queries — all use prepared statements (PDO)
+
+    // Total products
+    $totalProducts = (int)$pdo->query('SELECT COUNT(*) FROM products')->fetchColumn();
+
+    // Low stock: items with stock_quantity < 5 and > 0
+    $lowStockCount = (int)$pdo->query('SELECT COUNT(*) FROM products WHERE stock_quantity < 5')->fetchColumn();
+
+    // Pending orders (status = pending OR processing)
+    $pendingOrders = (int)$pdo->query(
+        "SELECT COUNT(*) FROM orders WHERE status IN ('pending','processing')"
+    )->fetchColumn();
+
+    // Total registered users
+    $totalUsers = (int)$pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+
+    // 5 most recent orders with customer name
+    $recentOrders = $pdo->query(
+        "SELECT o.order_id, o.status, o.total_amount, o.created_at,
+                u.first_name, u.last_name
+         FROM orders o
+         JOIN users u ON o.user_id = u.user_id
+         ORDER BY o.created_at DESC
+         LIMIT 5"
+    )->fetchAll();
+
+    // Low stock items (stock < 5), up to 5 rows
+    $stmt = $pdo->prepare(
+        'SELECT name, stock_quantity, category FROM products
+         WHERE stock_quantity < 5
+         ORDER BY stock_quantity ASC
+         LIMIT 5'
+    );
+    $stmt->execute();
+    $lowStockItems = $stmt->fetchAll();
 }
 
-$revLabels = json_encode(['Oct','Nov','Dec']);
-$revValues = json_encode([12000, 15000, 18000]);
-$orderStatusLabels = json_encode(['Delivered', 'Processing']);
-$orderStatusCounts = json_encode([25, 8]);
+// Helper: map order status to Bootstrap badge colour
+function orderStatusBadge(string $status): string {
+    return match ($status) {
+        'pending'    => 'bg-warning text-dark',
+        'processing' => 'bg-info text-dark',
+        'shipped'    => 'bg-primary',
+        'delivered'  => 'bg-success',
+        'cancelled'  => 'bg-danger',
+        default      => 'bg-secondary',
+    };
+}
+
+$currentPage = 'dashboard';
+$pageTitle   = 'Admin Dashboard – ' . SITE_NAME;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users – Admin Panel</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/user-ui.css">;
-    <link rel="stylesheet" href="/css/dashboard.css">
+    <title><?= htmlspecialchars($pageTitle) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link rel="stylesheet" href="<?= appUrl('/css/main.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= appUrl('/admin/css/admin.css') ?>">
 </head>
+<body class="admin-body">
 
-<body>
-<div id="sidebar-overlay" class="sidebar-overlay"></div>
+    <!-- ============================================================
+         LAYOUT: sidebar on the left, content on the right
+         ============================================================ -->
+    <div class="admin-layout">
 
-<div class="dash-wrapper">
-    <!-- ── SIDEBAR ── -->
-    <aside class="sidebar">
-        <div class="sidebar-brand">
-            <a href="/index.php">
-                <img src="/assets/logo.png" alt="Logo" height="28" class="rounded-2">
-                Pomegranate
-            </a>
-            <div class="sidebar-role-badge role-admin">
-                <i class="bi bi-shield-lock"></i> Admin
-            </div>
-        </div>
+        <!-- Sidebar -->
+        <?php include __DIR__ . '/inc/sidebar.php'; ?>
 
-        <nav class="sidebar-nav">
-            <div class="sidebar-section-label">Overview</div>
-            <a href="index.php"    class="sidebar-link active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a href="users.php"    class="sidebar-link"><i class="bi bi-people"></i> Users</a>
-            <a href="../employee/products.php" class="sidebar-link"><i class="bi bi-box-seam"></i> Products</a>
-            <div class="sidebar-section-label">Employee View</div>
-            <a href="../employee/index.php" class="sidebar-link"><i class="bi bi-person-badge"></i> Employee Dashboard</a>
-            <a href="/catalog.php"          class="sidebar-link"><i class="bi bi-grid-3x3-gap"></i> View Storefront</a>
-        </nav>
+        <!-- Main content area -->
+        <div class="admin-content">
 
-        <div class="sidebar-footer">
-            <a href="/logout.php" class="sidebar-user">
-                <div class="sidebar-avatar"><?= h($admin_initial) ?></div>
-                <div class="sidebar-user-info">
-                    <div class="name"><?= h($admin_fname) ?></div>
-                    <div class="role">Sign out</div>
-                </div>
-                <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
-            </a>
-        </div>
-    </aside>
-
-    <!-- ── MAIN ── -->
-    <div class="dash-main">
-        <div class="dash-topbar">
-            <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
-                <span class="page-title">Admin Overview</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <span class="text-white-50 small d-none d-md-inline"><?= date('D, d M Y') ?></span>
-                <a href="users.php" class="btn-dash-primary">
-                    <i class="bi bi-person-plus"></i> Add User
-                </a>
-            </div>
-        </div>
-
-        <div class="dash-content">
-
-            <!-- Warning banner -->
-            <div class="d-flex align-items-center gap-3 p-3 mb-4 rounded-3"
-                 style="background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);">
-                <i class="bi bi-shield-exclamation flex-shrink-0" style="color:var(--red);font-size:1.4rem;"></i>
+            <!-- Top bar -->
+            <div class="admin-topbar d-flex align-items-center justify-content-between px-4 py-3">
                 <div>
-                    <div class="fw-semibold text-white small">Admin Access Area</div>
-                    <div class="text-white-50" style="font-size:.78rem;">
-                        You have full system privileges. All actions are logged and audited.
-                    </div>
+                    <h4 class="fw-bold mb-0">Dashboard Overview</h4>
+                    <small class="text-muted">Welcome back, <?= htmlspecialchars($currentSessionUser['first_name']) ?>!</small>
+                </div>
+                <div class="text-muted small">
+                    <?= date('l, d F Y') ?>
                 </div>
             </div>
 
-            <?php if (isset($_GET['msg'])): ?>
-            <div class="alert-success-dark p-3 mb-4 auto-dismiss d-flex align-items-center gap-2">
-                <i class="bi bi-check-circle-fill"></i><?= h($_GET['msg']) ?>
-            </div>
-            <?php endif; ?>
+            <!-- Page body -->
+            <div class="p-4">
 
-            <!-- Stat cards -->
-            <div class="row g-3 mb-4">
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card cyan">
-                        <div class="stat-icon"><i class="bi bi-people"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value"><?= number_format($stats['total_users']) ?></div>
-                            <div class="stat-card-label">Total Users</div>
-                            <div class="stat-card-change change-up">
-                                <i class="bi bi-person-plus"></i> <?= $stats['new_users_today'] ?> today
+                <div class="admin-flash">
+                    <?= renderFlash() ?>
+                </div>
+
+                <?php if ($isOffline): ?>
+                    <div class="alert alert-info small">
+                        <i class="bi bi-wifi-off me-1"></i>
+                        Offline demo mode active — showing sample data.
+                    </div>
+                <?php endif; ?>
+
+                <!-- ============================================================
+                     STAT CARDS
+                     ============================================================ -->
+                <div class="row g-4 mb-4">
+
+                    <!-- Total Products -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                                    <i class="bi bi-phone fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Total Products</div>
+                                    <div class="fw-bold fs-4"><?= $totalProducts ?></div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <a href="<?= appUrl('/admin/products.php') ?>" class="small text-decoration-none" style="color:#28666e;">
+                                    Manage products <i class="bi bi-arrow-right"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card green">
-                        <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value">$<?= number_format($stats['total_revenue'], 0) ?></div>
-                            <div class="stat-card-label">Total Revenue</div>
-                            <div class="stat-card-change change-up"><i class="bi bi-arrow-up-short"></i> All time</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card purple">
-                        <div class="stat-icon"><i class="bi bi-bag-check"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value"><?= number_format($stats['total_orders']) ?></div>
-                            <div class="stat-card-label">Total Orders</div>
-                            <div class="stat-card-change change-up"><i class="bi bi-arrow-up-short"></i> All time</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card amber">
-                        <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value"><?= number_format($stats['total_products']) ?></div>
-                            <div class="stat-card-label">Active Products</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card cyan">
-                        <div class="stat-icon"><i class="bi bi-person-badge"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value"><?= number_format($stats['active_employees']) ?></div>
-                            <div class="stat-card-label">Staff Members</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6 col-xl-4">
-                    <div class="stat-card purple">
-                        <div class="stat-icon"><i class="bi bi-shield-check"></i></div>
-                        <div class="stat-body">
-                            <div class="stat-card-value">100%</div>
-                            <div class="stat-card-label">System Uptime</div>
-                            <div class="stat-card-change change-up"><i class="bi bi-check2-circle"></i> All systems OK</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Charts -->
-            <div class="row g-3 mb-4">
-                <div class="col-12 col-lg-8">
-                    <div class="chart-card">
-                        <div class="chart-card-header">
-                            <span class="chart-card-title">Revenue Trend (Last 7 Months)</span>
-                        </div>
-                        <div style="height:240px;">
-                            <canvas id="revenueChart" data-labels='<?= $revLabels ?>' data-values='<?= $revValues ?>'></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 col-lg-4">
-                    <div class="chart-card">
-                        <div class="chart-card-header">
-                            <span class="chart-card-title">Order Status</span>
-                        </div>
-                        <div style="height:240px;">
-                            <canvas id="ordersChart"
-                                    data-labels='<?= $orderLabels ?>'
-                                    data-values='<?= $orderValues ?>'></canvas>
+                    <!-- Low Stock -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100 <?= $lowStockCount > 0 ? 'stat-card-warning' : '' ?>">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                                    <i class="bi bi-exclamation-triangle fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Low Stock Items</div>
+                                    <div class="fw-bold fs-4"><?= $lowStockCount ?></div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <a href="<?= appUrl('/admin/inventory.php') ?>" class="small text-decoration-none" style="color:#28666e;">
+                                    View inventory <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Quick actions + recent users -->
-            <div class="row g-3">
-                <!-- Quick actions -->
-                <div class="col-12 col-lg-4">
-                    <div class="chart-card h-100">
-                        <div class="chart-card-header mb-3">
-                            <span class="chart-card-title">Quick Actions</span>
-                        </div>
-                        <div class="d-flex flex-column gap-2">
-                            <a href="users.php"            class="btn-dash-secondary w-100"><i class="bi bi-people"></i>       Manage Users</a>
-                            <a href="products.php"         class="btn-dash-secondary w-100"><i class="bi bi-box-seam"></i>      Manage Products</a>
+                    <!-- Pending Orders -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                                    <i class="bi bi-bag-check fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Pending Orders</div>
+                                    <div class="fw-bold fs-4"><?= $pendingOrders ?></div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <a href="<?= appUrl('/admin/orders.php') ?>" class="small text-decoration-none" style="color:#28666e;">
+                                    Manage orders <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Users -->
-                <div class="col-12 col-lg-8">
-                    <div class="dash-table-wrap">
-                        <div class="dash-table-header">
-                            <span class="dash-table-title">Users</span>
-                            <a href="users.php" class="btn-dash-secondary" style="font-size:.75rem;padding:.3rem .7rem;">View all</a>
+                    <!-- Total Users -->
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-people fs-4"></i>
+                                </div>
+                                <div>
+                                    <div class="text-muted small">Registered Users</div>
+                                    <div class="fw-bold fs-4"><?= $totalUsers ?></div>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pt-0">
+                                <a href="<?= appUrl('/admin/manage_users.php') ?>" class="small text-decoration-none" style="color:#28666e;">
+                                    Manage users <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
-                        <div style="overflow-x:auto;">
-                            <table class="dash-table">
-                                <thead>
-                                    <tr>
-                                        <th>User</th>
-                                        <th>Email</th>
-                                        <th>Role</th>
-                                        <th>Joined</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($recentUsers as $u): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="sidebar-avatar" style="width:28px;height:28px;font-size:.75rem;">
-                                                    <?= strtoupper(substr($u['username'],0,1)) ?>
-                                                </div>
-                                                <div>
-                                                    <div class="fw-semibold text-white small"><?= h($u['full_name'] ?: $u['username']) ?></div>
-                                                    <div class="text-white-50" style="font-size:.72rem;">@<?= h($u['username']) ?></div>
-                                                </div>
+                    </div>
+
+                </div><!-- /row stat cards -->
+
+                <!-- ============================================================
+                     LOWER ROW: Recent Orders + Low Stock Alerts
+                     ============================================================ -->
+                <div class="row g-4">
+
+                    <!-- Recent Orders -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="fw-semibold mb-0"><i class="bi bi-clock-history me-2"></i>Recent Orders</h6>
+                                <a href="<?= appUrl('/admin/orders.php') ?>" class="btn btn-sm btn-outline-secondary">View all</a>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="ps-3">Order #</th>
+                                                <th>Customer</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <?php if (empty($recentOrders)): ?>
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted py-4">No orders yet.</td>
+                                            </tr>
+                                        <?php else: ?>
+                                            <?php foreach ($recentOrders as $order): ?>
+                                            <tr>
+                                                <td class="ps-3 text-muted">#<?= htmlspecialchars((string)$order['order_id']) ?></td>
+                                                <td class="fw-semibold">
+                                                    <?= htmlspecialchars($order['first_name'] . ' ' . $order['last_name']) ?>
+                                                </td>
+                                                <td>$<?= number_format((float)$order['total_amount'], 2) ?></td>
+                                                <td>
+                                                    <span class="badge <?= orderStatusBadge($order['status']) ?>">
+                                                        <?= ucfirst(htmlspecialchars($order['status'])) ?>
+                                                    </span>
+                                                </td>
+                                                <td class="text-muted small">
+                                                    <?= date('d M Y', strtotime($order['created_at'])) ?>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock Alerts -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="fw-semibold mb-0"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Low Stock</h6>
+                                <a href="<?= appUrl('/admin/inventory.php') ?>" class="btn btn-sm btn-outline-secondary">View all</a>
+                            </div>
+                            <div class="card-body">
+                                <?php if (empty($lowStockItems)): ?>
+                                    <div class="text-center text-muted py-3">
+                                        <i class="bi bi-check-circle text-success fs-4 d-block mb-2"></i>
+                                        All stock levels are healthy.
+                                    </div>
+                                <?php else: ?>
+                                    <ul class="list-unstyled mb-0">
+                                    <?php foreach ($lowStockItems as $item): ?>
+                                        <li class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                            <div>
+                                                <div class="fw-semibold small"><?= htmlspecialchars($item['name']) ?></div>
+                                                <div class="text-muted" style="font-size:0.75rem;"><?= htmlspecialchars($item['category']) ?></div>
                                             </div>
-                                        </td>
-                                        <td class="text-white-50" style="font-size:.8rem;"><?= h($u['email']) ?></td>
-                                        <td class="text-white-50" style="font-size:.8rem;"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
-                                        <td>
-                                            <a href="users.php?edit=<?= $u['id'] ?>" class="btn-icon" title="Edit user">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
+                                            <span class="badge <?= (int)$item['stock_quantity'] === 0 ? 'bg-danger' : 'bg-warning text-dark' ?>">
+                                                <?= (int)$item['stock_quantity'] === 0 ? 'Out of stock' : (int)$item['stock_quantity'] . ' left' ?>
+                                            </span>
+                                        </li>
                                     <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                    </ul>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-        </div>
-    </div>
-</div>
+                </div><!-- /lower row -->
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="../js/dashboard.js"></script>
+            </div><!-- /p-4 -->
+        </div><!-- /admin-content -->
+    </div><!-- /admin-layout -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </body>
 </html>

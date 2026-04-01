@@ -77,6 +77,65 @@ $total = count($products);
         </div>
     </div>
 
+    <div class="container mt-4">
+        <?= renderFlash() ?>
+    </div>
+
+    <?php if ($canManageCatalog): ?>
+    <div class="container-fluid px-4 mt-2">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h6 class="fw-bold mb-0">Add New Catalog Item</h6>
+                <small class="text-muted">Employee/Admin tool (session-based in offline mode)</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="<?= appUrl('/catalog.php') ?>" class="row g-3">
+                    <?= csrfField() ?>
+                    <input type="hidden" name="action" value="add_catalog_item">
+
+                    <div class="col-md-4">
+                        <label class="form-label" for="name">Product Name</label>
+                        <input id="name" name="name" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="category">Category</label>
+                        <input id="category" name="category" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="price">Price</label>
+                        <input id="price" name="price" type="number" min="0.01" step="0.01" class="form-control" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="old_price">Old Price</label>
+                        <input id="old_price" name="old_price" type="number" min="0" step="0.01" class="form-control">
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" for="badge">Badge</label>
+                        <select id="badge" name="badge" class="form-select">
+                            <option value="">None</option>
+                            <option value="New">New</option>
+                            <option value="Sale">Sale</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label" for="image_url">Image URL</label>
+                        <input id="image_url" name="image_url" class="form-control" placeholder="https://... or assets/...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" for="desc">Description</label>
+                        <input id="desc" name="desc" class="form-control" placeholder="Short description">
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn text-white" style="background-color:#28666e;">
+                            <i class="bi bi-plus-circle me-1"></i>Add Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="filter-bar px-4 py-3 mb-4">
         <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
             <span class="filter-label text-muted">Filters</span>
@@ -189,13 +248,18 @@ $total = count($products);
                         <p id="modalDesc" class="text-muted small"></p>
 
                         <div class="d-flex gap-3 mt-2 mb-2">
-                            <div class="d-flex align-items-center gap-2 flex-grow-1 border rounded px-2">
-                                <button class="btn btn-sm p-0" id="qtyMinus">−</button>
-                                <span class="flex-grow-1 text-center" id="qtyValue">1</span>
-                                <button class="btn btn-sm p-0" id="qtyPlus">+</button>
-                            </div>
-                            <button class="modal-btn btn btn-dark flex-grow-1"><i class="bi bi-bag me-1"></i> Add to Cart</button>
+                            <span class="input-group-text bg-white justify-content-center flex-grow-1" id="qtyValue">1</span>
+                            <?php if ($canPurchase): ?>
+                                <button id="purchaseBtn" class="modal-btn btn btn-dark flex-grow-1"><i class="bi bi-bag me-1"></i> Add to Cart</button>
+                            <?php else: ?>
+                                <button id="purchaseBtn" class="modal-btn btn btn-secondary flex-grow-1" disabled title="Employees cannot purchase items">
+                                    <i class="bi bi-ban me-1"></i> Purchase Disabled
+                                </button>
+                            <?php endif; ?>
                         </div>
+                        <?php if ($isEmployee): ?>
+                            <small class="text-danger">Employee accounts can add catalog items but cannot purchase products.</small>
+                        <?php endif; ?>
 
                         <hr>
                         <h6 class="fw-bold mb-3">Customer Reviews</h6>
@@ -227,5 +291,6 @@ $total = count($products);
     </script>
     <script defer type="module" src="js/catalog-3d.js"></script>
     <script src="js/cart.js"></script>
+    <script defer type="module" src="<?= appUrl('/js/main.js') ?>"></script>
 </body>
 </html>
