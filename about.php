@@ -1,8 +1,8 @@
 <?php 
 
 require_once __DIR__ . '/inc/bootstrap.php'; 
-
 include __DIR__ . '/inc/page-top.inc.php';
+
 ?>
 
     <div class="hero mb-0">

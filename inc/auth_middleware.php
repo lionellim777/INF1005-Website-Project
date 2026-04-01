@@ -1,7 +1,5 @@
 <?php
-// 1. Boot up Zebra_Session securely before doing any checks
-// Using __DIR__ ensures it always finds the file no matter what folder includes this script
-require_once __DIR__ . '/init_session.php';
+require_once __DIR__ . '/bootstrap.php';
 
 /**
  * Enforces that a user must be logged in to access the page.

@@ -1,11 +1,12 @@
 <?php
-// 1. Boot up the database and security layers
+
 require_once __DIR__ . '/inc/bootstrap.php';
+require_once __DIR__ . '/inc/security_utils.php';
 
 $all_products = [];
 $all_reviews = [];
 
-// 2. Fetch Products from MySQL
+// Fetch Products from MySQL
 if (isset($db_conn)) {
     // Note: We select `desc` specifically since it's a reserved keyword
     $prod_result = $db_conn->query("SELECT id, name, `desc`, price, old_price, image_url, category, badge, model FROM products");
@@ -26,8 +27,8 @@ if (isset($db_conn)) {
     }
 }
 
-// 4. Handle Category Filtering Logic (Exactly as your teammate wrote it)
-$selected = isset($_GET['category']) ? $_GET['category'] : 'all';
+// Category Filtering
+$selected = isset($_GET['category']) ? sanitze_input($_GET['category']) : 'all';
 
 // Extract unique categories safely
 $categories = array_unique(array_column($all_products, 'category'));
@@ -62,6 +63,11 @@ $total = count($products);
     <?php
         include "inc/nav.inc.php";
     ?>
+/***
+ * The above code can all be compounded using page-top.inc.php
+ * and is done so for the rest of the code but due to three.js relying on the product array
+ * I've left it as is for now and remains the only page not to use page-top.inc.php.
+ */
 
     <div class="hero mb-0">
         <img src="assets/esmeralda.jpg" class="hero-img" alt="Esmeralda">
@@ -78,8 +84,8 @@ $total = count($products);
             <div class="d-flex gap-2 flex-wrap justify-content-center">
                 <button class="rounded-pill active" data-filter="all">All</button>
                 <?php foreach ($categories as $cat): ?>
-                    <button class="rounded-pill" data-filter="<?= htmlspecialchars($cat) ?>">
-                        <?= htmlspecialchars($cat) ?>
+                    <button class="rounded-pill" data-filter="<?= h($cat) ?>">
+                        <?= h($cat) ?>
                     </button>
                 <?php endforeach; ?>
             </div>
@@ -101,28 +107,28 @@ $total = count($products);
 
         <div class="row row-cols-2 row-cols-md-3 row-cols-xl-4 g-3" id="productGrid">
             <?php foreach ($all_products as $product): ?>
-            <div class="col animated" data-category="<?= htmlspecialchars($product['category']) ?>"
+            <div class="col animated" data-category="<?= h($product['category']) ?>"
                 data-price="<?= $product['price'] ?>">
                 <div class="card h-100 border-0 shadow-sm" >
 
                     <div class="position-relative">
-                        <img src="<?=htmlspecialchars($product['image_url']) ?>"
+                        <img src="<?=h($product['image_url']) ?>"
                                 class="card-img-top object-fit-cover"
-                                alt="<?=htmlspecialchars($product['name']) ?>">
+                                alt="<?=h($product['name']) ?>">
                         <?php if ($product['badge']): ?>
                             <span class="badge position-absolute top-0 end-0
                                 <?=$product['badge']==='New' ? 'bg-success' : 'bg-danger' ?>">
-                                <?=htmlspecialchars($product['badge']) ?>
+                                <?=h($product['badge']) ?>
                             </span>
                         <?php endif; ?>
                     </div>
 
                     <div class="card-body d-flex flex-column">
                         <small class="card-text-category text-uppercase text-muted fw-semibold">
-                            <?= htmlspecialchars($product['category']) ?>
+                            <?= h($product['category']) ?>
                         </small>
                         <h6 class="card-title mt-1 fw-semibold">
-                            <?= htmlspecialchars($product['name']) ?>
+                            <?= h($product['name']) ?>
                         </h6>
 
                         <div class="mt-auto d-flex align-items-baseline gap-2">
@@ -140,13 +146,13 @@ $total = count($products);
                             data-bs-toggle="modal"
                             data-bs-target="#productModal"
                             data-id="<?= $product['id'] ?>"
-                            data-name="<?= htmlspecialchars($product['name']) ?>"
+                            data-name="<?= h($product['name']) ?>"
                             data-price="<?= number_format($product['price'], 2) ?>"
                             data-oldprice="<?= $product['old_price'] ? number_format($product['old_price'], 2) : '' ?>"
-                            data-category="<?= htmlspecialchars($product['category']) ?>"
-                            data-image="<?= htmlspecialchars($product['image_url']) ?>"
-                            data-desc="<?= htmlspecialchars($product['desc']) ?>"
-                            data-model="<?= htmlspecialchars($product['model']) ?>">
+                            data-category="<?= h($product['category']) ?>"
+                            data-image="<?= h($product['image_url']) ?>"
+                            data-desc="<?= h($product['desc']) ?>"
+                            data-model="<?= h($product['model']) ?>">
                             <i class="bi bi-bag me-1"></i> View
                         </button>
                     </div>

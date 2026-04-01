@@ -15,7 +15,7 @@ if (isset($db_conn)) {
     }
 }
 
-$pageTitle = 'Pomegranate - Home';
+$pageTitle = 'Pomegranate | Home';
 include __DIR__ . '/inc/page-top.inc.php';
 ?>
 
@@ -61,10 +61,10 @@ include __DIR__ . '/inc/page-top.inc.php';
                 <?php foreach ($featured_products as $product): ?>
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3 d-flex justify-content-center">
                         <div class="card w-100 shadow-sm">
-                            <img src="<?php echo htmlspecialchars($product['image_url']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>" style="object-fit: cover; height: 200px;">
+                            <img src="<?php echo h($product['image_url']); ?>" class="card-img-top" alt="<?php echo h($product['name']); ?>" style="object-fit: cover; height: 200px;">
                             <div class="card-body text-center d-flex flex-column">
-                                <h5 class="card-title fw-bold"><?php echo htmlspecialchars($product['name']); ?></h5>
-                                <p class="card-text text-truncate"><?php echo htmlspecialchars($product['desc']); ?></p>
+                                <h5 class="card-title fw-bold"><?php echo h($product['name']); ?></h5>
+                                <p class="card-text text-truncate"><?php echo h($product['desc']); ?></p>
                                 <h6 class="text-success mb-3">$<?php echo number_format($product['price'], 2); ?></h6>
                                 <a href="product.php?id=<?php echo $product['id']; ?>" class="btn btn-outline-dark mt-auto">View Details</a>
                             </div>
