@@ -38,15 +38,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 <li class="nav-item">
                     <a class="nav-link <?= $currentPage==='about.php'?'active':'' ?>" href="/about.php">About</a>
                 </li>
-                <?php if ($loggedIn): ?>
-                <li class="nav-item">
-                    <a class="nav-link <?= $currentPage==='profile.php'?'active':'' ?>" href="/profile.php">Profile</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link <?= $currentPage==='orders.php'?'active':'' ?>" href="/orders.php">Orders</a>
-                </li>
-                <?php endif; ?>
-
             </ul>
 
             <!-- Right side actions -->
