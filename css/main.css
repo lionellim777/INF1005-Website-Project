@@ -43,10 +43,8 @@ body {
     scroll-margin-top: 90px;
 }
 
-#contact-map {
-    object-fit: cover;
-    object-position: center;
-    filter: saturate(0.9);
+#contact-support {
+    background-color: #ffffff;
 }
 
 #contact-container {
