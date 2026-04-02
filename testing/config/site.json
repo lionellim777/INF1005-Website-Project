@@ -1,0 +1,19 @@
+{
+  "baseUrl": "https://pomeshop.duckdns.org",
+  "crawlLimit": 20,
+  "seedPaths": [
+    "/"
+  ],
+  "auditPaths": [
+    "/",
+    "/about.php",
+    "/contact.php",
+    "/shop/catalog.php",
+    "/shop/cart.php",
+    "/account/login.php",
+    "/account/signup.php"
+  ],
+  "lighthousePaths": [
+    "/"
+  ]
+}
