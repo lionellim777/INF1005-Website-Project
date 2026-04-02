@@ -115,7 +115,7 @@ try {
             Add, update, or remove products from the storefront.
         </p>
         <div class="d-flex justify-content-center gap-2 mt-4">
-            <button class="btn-primary-glow" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <button type="button" class="btn-primary-glow" data-bs-toggle="modal" data-bs-target="#addProductModal">
                 <i class="bi bi-plus-lg"></i> Add New Product
             </button>
             <a href="<?= isAdmin() ? '/admin/index.php' : '/employee/index.php' ?>" class="btn btn-ghost">
@@ -238,7 +238,7 @@ try {
                             <input type="hidden" name="action"     value="delete_product">
                             <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                             <button type="submit" class="btn btn-sm"
-                                    title="Remove product"
+                                    title="Remove product" aria-label="Remove product <?= h($p['name']) ?>"
                                     style="background:rgba(248,113,113,.18);border:1px solid rgba(248,113,113,.35);color:#f87171;border-radius:.5rem;padding:.25rem .5rem;line-height:1;">
                                 <i class="bi bi-trash3"></i>
                             </button>
@@ -332,33 +332,33 @@ try {
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
-                            <label class="form-label text-white-50 small fw-semibold">Product Name *</label>
-                            <input type="text" name="name" class="form-control-dark" placeholder="e.g. NeoPulse X2" required>
+                            <label for="catalog_name" class="form-label text-white-50 small fw-semibold">Product Name *</label>
+                            <input id="catalog_name" type="text" name="name" class="form-control-dark" placeholder="e.g. NeoPulse X2" required>
                         </div>
                         <div class="col-12">
-                            <label class="form-label text-white-50 small fw-semibold">Description</label>
-                            <textarea name="description" class="form-control-dark" rows="3"
+                            <label for="catalog_description" class="form-label text-white-50 small fw-semibold">Description</label>
+                            <textarea id="catalog_description" name="description" class="form-control-dark" rows="3"
                                       placeholder="Brief product description…"
                                       style="resize:vertical;"></textarea>
                         </div>
                         <div class="col-sm-4">
-                            <label class="form-label text-white-50 small fw-semibold">Price ($) *</label>
-                            <input type="number" name="price" class="form-control-dark"
+                            <label for="catalog_price" class="form-label text-white-50 small fw-semibold">Price ($) *</label>
+                            <input id="catalog_price" type="number" name="price" class="form-control-dark"
                                    placeholder="0.00" min="0" step="0.01" required>
                         </div>
                         <div class="col-sm-4">
-                            <label class="form-label text-white-50 small fw-semibold">Sale Price ($)</label>
-                            <input type="number" name="sale_price" class="form-control-dark"
+                            <label for="catalog_sale_price" class="form-label text-white-50 small fw-semibold">Sale Price ($)</label>
+                            <input id="catalog_sale_price" type="number" name="sale_price" class="form-control-dark"
                                    placeholder="Leave blank if none" min="0" step="0.01">
                         </div>
                         <div class="col-sm-4">
-                            <label class="form-label text-white-50 small fw-semibold">Stock</label>
-                            <input type="number" name="stock" class="form-control-dark"
+                            <label for="catalog_stock" class="form-label text-white-50 small fw-semibold">Stock</label>
+                            <input id="catalog_stock" type="number" name="stock" class="form-control-dark"
                                    placeholder="0" min="0" value="0">
                         </div>
                         <div class="col-sm-8">
-                            <label class="form-label text-white-50 small fw-semibold">Category</label>
-                            <select name="category_id" class="form-control-dark">
+                            <label for="catalog_category_id" class="form-label text-white-50 small fw-semibold">Category</label>
+                            <select id="catalog_category_id" name="category_id" class="form-control-dark">
                                 <option value="">— No category —</option>
                                 <?php foreach ($categories as $cat): ?>
                                 <option value="<?= (int)$cat['id'] ?>"><?= h($cat['name']) ?></option>

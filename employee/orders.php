@@ -105,7 +105,7 @@ $statuses = ['all','pending','processing','shipped','delivered','cancelled'];
     <div class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">Orders</span>
             </div>
             <span class="text-white-50 small d-none d-md-inline"><?= date('D, d M Y') ?></span>
@@ -180,7 +180,7 @@ $statuses = ['all','pending','processing','shipped','delivered','cancelled'];
                                 <td><span class="status-badge status-<?= h($o['status']) ?>"><?= ucfirst(h($o['status'])) ?></span></td>
                                 <td class="text-white-50" style="font-size:.8rem;"><?= date('d M Y', strtotime($o['created_at'])) ?></td>
                                 <td>
-                                    <button type="button" class="btn-icon" title="View details"
+                                    <button type="button" class="btn-icon" title="View details" aria-label="View details for order #<?= (int)$o['id'] ?>"
                                             onclick="showOrderDetails(<?= htmlspecialchars(json_encode($o), ENT_QUOTES) ?>)">
                                         <i class="bi bi-eye"></i>
                                     </button>

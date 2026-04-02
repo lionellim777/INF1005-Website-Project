@@ -6,6 +6,13 @@ $msg = $err = '';
 
 // Handle password change
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
+    } catch (RuntimeException $e) {
+        header('Location: settings.php?err=' . urlencode($e->getMessage()));
+        exit;
+    }
+
     $action = $_POST['action'] ?? '';
     if ($action === 'change_password') {
         $current = $_POST['current_password'] ?? '';
@@ -14,7 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $pdo  = getDB();
-            $user = $pdo->prepare("SELECT password_hash FROM users WHERE id=?")->execute([getUserId()]) ? null : null;
             $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id=?");
             $stmt->execute([getUserId()]);
             $user = $stmt->fetch();
@@ -30,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif ($newPwd !== $confirm) {
                 $err = 'Passwords do not match.';
             } else {
-                $hash = password_hash($newPwd, PASSWORD_BCRYPT);
+                $hash = password_hash($newPwd, PASSWORD_DEFAULT);
                 $pdo->prepare("UPDATE users SET password_hash=? WHERE id=?")->execute([$hash, getUserId()]);
                 $msg = 'Password updated successfully.';
             }
@@ -106,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">Settings</span>
             </div>
             <span class="text-white-50 small d-none d-md-inline"><?= date('D, d M Y') ?></span>
@@ -166,20 +172,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p class="text-white-50 small mb-4">Update your admin account password.</p>
                         <form method="POST" action="settings.php">
                             <input type="hidden" name="action" value="change_password">
+                            <?= csrfInput() ?>
                             <div class="d-flex flex-column gap-3">
                                 <div>
-                                    <label class="form-label text-white-50 small fw-semibold">Current Password</label>
-                                    <input type="password" name="current_password" class="form-control-dark"
+                                    <label for="current_password" class="form-label text-white-50 small fw-semibold">Current Password</label>
+                                    <input id="current_password" type="password" name="current_password" class="form-control-dark"
                                            placeholder="Enter current password" required autocomplete="current-password">
                                 </div>
                                 <div>
-                                    <label class="form-label text-white-50 small fw-semibold">New Password</label>
-                                    <input type="password" name="new_password" class="form-control-dark"
+                                    <label for="new_password" class="form-label text-white-50 small fw-semibold">New Password</label>
+                                    <input id="new_password" type="password" name="new_password" class="form-control-dark"
                                            placeholder="Min. 8 chars, 1 uppercase, 1 number" required autocomplete="new-password">
                                 </div>
                                 <div>
-                                    <label class="form-label text-white-50 small fw-semibold">Confirm New Password</label>
-                                    <input type="password" name="confirm_password" class="form-control-dark"
+                                    <label for="confirm_password" class="form-label text-white-50 small fw-semibold">Confirm New Password</label>
+                                    <input id="confirm_password" type="password" name="confirm_password" class="form-control-dark"
                                            placeholder="Repeat new password" required autocomplete="new-password">
                                 </div>
                                 <button type="submit" class="btn-dash-primary w-100">

@@ -292,7 +292,7 @@ function normalizedRoleForSelect(string $dbRole): string {
                                         <?= csrfInput() ?>
                                         <input type="hidden" name="action"  value="toggle_status">
                                         <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                        <button type="submit" class="status-badge <?= $u['is_active'] ? 'status-active' : 'status-inactive' ?>"
+                                        <button type="submit" class="status-badge <?= $u['is_active'] ? 'status-active' : 'status-inactive' ?>" aria-label="Toggle status for user <?= h($u['username']) ?>"
                                                 style="background:none;border:none;cursor:pointer;<?= $u['id']==getUserId()?'opacity:.5;pointer-events:none;':'' ?>"
                                                 title="Click to toggle">
                                             <?= $u['is_active'] ? 'Active' : 'Suspended' ?>

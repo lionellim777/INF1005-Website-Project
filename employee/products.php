@@ -291,7 +291,7 @@ $flashErr = $err;
                 <?= csrfInput() ?>
                 <input type="hidden" name="action" value="add">
                 <div class="modal-body">
-                    <?php include '_product_form_fields.php'; ?>
+                    <?php $fieldPrefix = 'add_'; include '_product_form_fields.php'; ?>
                 </div>
                 <div class="modal-footer" style="border-color:rgba(255,255,255,.08);">
                     <button type="button" class="btn-dash-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -317,7 +317,7 @@ $flashErr = $err;
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="product_id" id="edit_product_id">
                 <div class="modal-body" id="editModalBody">
-                    <?php include '_product_form_fields.php'; ?>
+                    <?php $fieldPrefix = 'edit_'; include '_product_form_fields.php'; ?>
                 </div>
                 <div class="modal-footer" style="border-color:rgba(255,255,255,.08);">
                     <button type="button" class="btn-dash-secondary" data-bs-dismiss="modal">Cancel</button>

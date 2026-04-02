@@ -6,6 +6,13 @@ $msg = $err = '';
 
 // Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
+    } catch (RuntimeException $e) {
+        header('Location: orders.php?err=' . urlencode($e->getMessage()));
+        exit;
+    }
+
     $action = $_POST['action'] ?? '';
     try {
         $pdo = getDB();
@@ -135,7 +142,7 @@ $totalAll = array_sum($statusCounts);
     <div class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">Orders</span>
             </div>
             <span class="text-white-50 small d-none d-md-inline"><?= date('D, d M Y') ?></span>
@@ -219,6 +226,7 @@ $totalAll = array_sum($statusCounts);
                                 <td>
                                     <div class="d-flex gap-1 align-items-center">
                                         <form method="POST" action="orders.php" class="d-flex gap-1 align-items-center">
+                                            <?= csrfInput() ?>
                                             <input type="hidden" name="action"   value="update_status">
                                             <input type="hidden" name="order_id" value="<?= $o['id'] ?>">
                                             <select name="status" class="form-control-dark"
@@ -227,11 +235,11 @@ $totalAll = array_sum($statusCounts);
                                                 <option value="<?= $s ?>" <?= $o['status']===$s?'selected':'' ?>><?= ucfirst($s) ?></option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <button type="submit" class="btn-icon" title="Update status">
+                                            <button type="submit" class="btn-icon" title="Update status" aria-label="Update status for order #<?= (int)$o['id'] ?>">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
                                         </form>
-                                        <button type="button" class="btn-icon" title="View details"
+                                        <button type="button" class="btn-icon" title="View details" aria-label="View details for order #<?= (int)$o['id'] ?>"
                                                 onclick="showOrderDetails(<?= htmlspecialchars(json_encode($o), ENT_QUOTES) ?>)">
                                             <i class="bi bi-eye"></i>
                                         </button>

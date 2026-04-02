@@ -138,11 +138,11 @@ try {
     <div class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">Products</span>
             </div>
             <div class="d-flex gap-2">
-                <button class="btn-dash-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                <button type="button" class="btn-dash-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
                     <i class="bi bi-plus-lg"></i> Add Product
                 </button>
             </div>
@@ -228,14 +228,14 @@ try {
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <button class="btn-icon" title="Edit"
+                                        <button type="button" class="btn-icon" title="Edit" aria-label="Edit product <?= h($p['name']) ?>"
                                                 onclick="openEditModal(<?= htmlspecialchars(json_encode($p), ENT_QUOTES) ?>)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <form method="POST" action="products.php" class="d-inline">
                                             <input type="hidden" name="action"     value="delete">
                                             <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
-                                            <button type="submit" class="btn-icon" style="color:#f87171;" title="Remove"
+                                            <button type="submit" class="btn-icon" style="color:#f87171;" title="Remove" aria-label="Remove product <?= h($p['name']) ?>"
                                                     data-confirm="Remove '<?= addslashes(h($p['name'])) ?>' from catalog?">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
@@ -265,7 +265,7 @@ try {
             <form method="POST" action="products.php">
                 <input type="hidden" name="action" value="add">
                 <div class="modal-body">
-                    <?php include "../employee/_product_form_fields.php"; ?>
+                    <?php $fieldPrefix = 'add_'; include "../employee/_product_form_fields.php"; ?>
                 </div>
                 <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,.08);">
                     <button type="button" class="btn-dash-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -290,7 +290,7 @@ try {
                 <input type="hidden" name="action"     value="edit">
                 <input type="hidden" name="product_id" id="edit-product-id">
                 <div class="modal-body">
-                    <?php include "../employee/_product_form_fields.php"; ?>
+                    <?php $fieldPrefix = 'edit_'; include "../employee/_product_form_fields.php"; ?>
                 </div>
                 <div class="modal-footer" style="border-top:1px solid rgba(255,255,255,.08);">
                     <button type="button" class="btn-dash-secondary" data-bs-dismiss="modal">Cancel</button>

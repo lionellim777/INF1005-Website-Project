@@ -141,7 +141,7 @@ $prodValues = json_encode(array_column($topProducts, 'units'));
     <div class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">Analytics</span>
             </div>
             <span class="text-white-50 small d-none d-md-inline"><?= date('D, d M Y') ?></span>
