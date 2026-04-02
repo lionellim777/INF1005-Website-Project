@@ -41,18 +41,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'chang
 }
 
 // ---------------------------------------------------------------------------
-// POST: TOGGLE STATUS
+// POST: DELETE USER
 // ---------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'toggle_status') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_user') {
     $targetId = (int)($_POST['target_user_id'] ?? 0);
 
     if ($targetId === (int)$currentSessionUser['user_id']) {
-        $errorMsg = 'You cannot deactivate yourself.';
+        $errorMsg = 'You cannot delete your own account.';
     } else {
-        $stmt = $db_conn->prepare('UPDATE users SET is_active = IF(is_active=1, 0, 1) WHERE id = ?');
+        $stmt = $db_conn->prepare('DELETE FROM users WHERE id = ?');
         $stmt->bind_param("i", $targetId);
-        if ($stmt->execute()) $successMsg = 'User status updated successfully.';
-        else $errorMsg = 'Failed to update status.';
+        if ($stmt->execute()) {
+            $successMsg = 'User deleted permanently.';
+        } else {
+            $errorMsg = 'Failed to delete user. They may have active orders linked to them.';
+        }
     }
 }
 
@@ -78,10 +81,9 @@ $searchResults = [];
 if ($search !== '') {
     $like = "%{$search}%";
     $searchStmt = $db_conn->prepare("
-        SELECT id as user_id, fname as first_name, lname as last_name,
-               email, role as role_name, created_at, last_login, is_active
+        SELECT id as user_id, fname, lname, email, role as role_name, created_at, last_login, is_active
         FROM users
-        WHERE role = 'user'
+        WHERE role = 'customer'
           AND (fname LIKE ? OR lname LIKE ? OR email LIKE ?)
         ORDER BY fname ASC
     ");
@@ -167,7 +169,7 @@ $currentPage = 'users';
                             <tr class="<?= !$active ? 'opacity-50' : '' ?>">
                                 <td>
                                     <div class="fw-semibold text-white d-flex align-items-center gap-2">
-                                        <?= htmlspecialchars($u['first_name'] . ' ' . $u['last_name']) ?>
+                                        <?= htmlspecialchars($u['fname'] . ' ' . $u['lname']) ?>
                                         <?php if (!$active): ?>
                                             <span class="badge bg-danger ms-1" style="font-size:0.6rem;">Inactive</span>
                                         <?php endif; ?>
@@ -206,15 +208,14 @@ $currentPage = 'users';
                                     <?php endif; ?>
                                 </td>
 
-                                <!-- Toggle Status -->
+                                <!-- Delete Staff -->
                                 <td class="text-end pe-3">
                                     <?php if ($u['user_id'] != $currentSessionUser['user_id']): ?>
-                                        <form method="POST" onsubmit="return confirm('<?= $active ? 'Deactivate' : 'Reactivate' ?> this account?');">
-                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                            <input type="hidden" name="action" value="toggle_status">
+                                        <form method="POST" onsubmit="return confirm('Are you sure? This will permanently remove this user.');">
+                                            <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <button type="submit" class="btn btn-sm <?= $active ? 'btn-outline-danger' : 'btn-outline-success' ?>">
-                                                <?= $active ? 'Deactivate' : 'Activate' ?>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash me-1"></i>Delete
                                             </button>
                                         </form>
                                     <?php else: ?>
@@ -311,14 +312,13 @@ $currentPage = 'users';
                                         </form>
                                     </td>
 
-                                    <!-- Toggle Status -->
+                                    <!-- Delete Customer -->
                                     <td class="text-end pe-3">
-                                        <form method="POST" onsubmit="return confirm('<?= $active ? 'Deactivate' : 'Reactivate' ?> this account?');">
-                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                            <input type="hidden" name="action" value="toggle_status">
+                                        <form method="POST" onsubmit="return confirm('Are you sure? This will permanently remove this customer account.');">
+                                            <input type="hidden" name="action" value="delete_user">
                                             <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <button type="submit" class="btn btn-sm <?= $active ? 'btn-outline-danger' : 'btn-outline-success' ?>">
-                                                <?= $active ? 'Deactivate' : 'Activate' ?>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash me-1"></i>Delete
                                             </button>
                                         </form>
                                     </td>
