@@ -330,7 +330,11 @@ function initCartControls() {
                 const res  = await fetch('cart_update.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId, quantity: newQty })
+                    body: JSON.stringify({
+                        product_id: productId,
+                        quantity: newQty,
+                        csrf_token: window.APP_CSRF_TOKEN || ''
+                    })
                 });
                 const data = await res.json();
                 if (data.success) {

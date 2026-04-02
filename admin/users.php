@@ -1,6 +1,8 @@
 <?php
 require_once "../inc/auth.inc.php";
 requireAdmin();
+header('Location: /index.php?msg=' . urlencode('Admin dashboard access is disabled in this branch.'));
+exit;
 
 $pdo   = null;
 $users = [];
@@ -9,54 +11,87 @@ $msg   = $err = '';
 // Handle POST actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
+
         $pdo    = getDB();
         $action = $_POST['action'] ?? '';
         $uid    = (int)($_POST['user_id'] ?? 0);
 
         if ($action === 'add') {
             $un   = trim($_POST['username'] ?? '');
-            $em   = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+            $em   = strtolower(trim((string)($_POST['email'] ?? '')));
             $pw   = $_POST['password'] ?? '';
-            $fn   = trim(htmlspecialchars($_POST['full_name'] ?? '', ENT_QUOTES, 'UTF-8'));
-            $role = in_array($_POST['role'] ?? '', ['customer','employee','admin']) ? $_POST['role'] : 'customer';
+            $fn   = trim((string)($_POST['full_name'] ?? ''));
+            $role = toDbRole((string)($_POST['role'] ?? 'user'));
 
-            if (!$un || !$em || strlen($pw) < 8) {
-                $err = 'Username, valid email, and a password of at least 8 characters are required.';
+            if (!$un || !preg_match('/^[a-zA-Z0-9_]{3,50}$/', $un)) {
+                $err = 'Username must be 3-50 characters and use only letters, numbers, and underscores.';
+            } elseif (!$em || !filter_var($em, FILTER_VALIDATE_EMAIL)) {
+                $err = 'A valid email address is required.';
+            } elseif (strlen($pw) < 8 || !preg_match('/[A-Z]/', $pw) || !preg_match('/[0-9]/', $pw)) {
+                $err = 'Password must be at least 8 characters with one uppercase letter and one number.';
+            } elseif ($fn !== '' && strlen($fn) > 100) {
+                $err = 'Full name must be 100 characters or fewer.';
+            } elseif ($fn !== '' && !preg_match('/^[a-zA-Z0-9 .,\-\'"]+$/', $fn)) {
+                $err = 'Full name contains unsupported characters.';
             } else {
-                $hash = password_hash($pw, PASSWORD_DEFAULT);
-                $pdo->prepare("INSERT INTO users (username,email,password_hash,full_name,role) VALUES (?,?,?,?,?)")
-                    ->execute([$un,$em,$hash,$fn,$role]);
-                $msg = "User '{$un}' created successfully.";
+                $dupStmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
+                $dupStmt->execute([$un, $em]);
+                if ($dupStmt->fetch()) {
+                    $err = 'Username or email is already in use.';
+                } else {
+                    $hash = password_hash($pw, PASSWORD_DEFAULT);
+                    $pdo->prepare("INSERT INTO users (username,email,password_hash,full_name,role) VALUES (?,?,?,?,?)")
+                        ->execute([$un,$em,$hash,$fn,$role]);
+                    $msg = "User '{$un}' created successfully.";
+                }
             }
 
         } elseif ($action === 'edit' && $uid) {
-            $fn      = trim(htmlspecialchars($_POST['full_name'] ?? '', ENT_QUOTES, 'UTF-8'));
-            $em      = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
-            $role    = in_array($_POST['role'] ?? '', ['customer','employee','admin']) ? $_POST['role'] : 'customer';
+            $fn      = trim((string)($_POST['full_name'] ?? ''));
+            $em      = strtolower(trim((string)($_POST['email'] ?? '')));
+            $role    = toDbRole((string)($_POST['role'] ?? 'user'));
             $active  = (int)isset($_POST['is_active']);
+            $newPw   = (string)($_POST['new_password'] ?? '');
 
-            // Prevent admin from deactivating themselves
-            if ($uid === getUserId() && !$active) {
-                $err = 'You cannot suspend your own account.';
-            } elseif ($uid === getUserId() && $role !== 'admin') {
-                $err = 'You cannot remove your own admin role.';
+            if (!filter_var($em, FILTER_VALIDATE_EMAIL)) {
+                $err = 'A valid email address is required.';
+            } elseif ($fn !== '' && strlen($fn) > 100) {
+                $err = 'Full name must be 100 characters or fewer.';
+            } elseif ($fn !== '' && !preg_match('/^[a-zA-Z0-9 .,\-\'"]+$/', $fn)) {
+                $err = 'Full name contains unsupported characters.';
+            } elseif ($newPw !== '' && (strlen($newPw) < 8 || !preg_match('/[A-Z]/', $newPw) || !preg_match('/[0-9]/', $newPw))) {
+                $err = 'New password must be at least 8 characters with one uppercase letter and one number.';
             } else {
+                $dupStmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id <> ? LIMIT 1");
+                $dupStmt->execute([$em, $uid]);
+                if ($dupStmt->fetch()) {
+                    $err = 'That email address is already in use.';
+                }
+            }
+
+            // Prevent administrator from deactivating themselves
+            if (!$err && $uid === getUserId() && !$active) {
+                $err = 'You cannot suspend your own account.';
+            } elseif (!$err && $uid === getUserId() && normalizeRole($role) !== 'administrator') {
+                $err = 'You cannot remove your own administrator role.';
+            }
+
+            if (!$err) {
                 $stmt = $pdo->prepare("UPDATE users SET full_name=?,email=?,role=?,is_active=? WHERE id=?");
                 $stmt->execute([$fn,$em,$role,$active,$uid]);
 
                 // Update password only if provided
-                if (!empty($_POST['new_password']) && strlen($_POST['new_password']) >= 8) {
+                if ($newPw !== '') {
                     $pdo->prepare("UPDATE users SET password_hash=? WHERE id=?")
-                        ->execute([password_hash($_POST['new_password'], PASSWORD_DEFAULT), $uid]);
+                        ->execute([password_hash($newPw, PASSWORD_DEFAULT), $uid]);
                 }
                 $msg = 'User updated.';
             }
-
         } elseif ($action === 'toggle_status' && $uid) {
             if ($uid === getUserId()) {
                 $err = 'You cannot suspend your own account.';
             } else {
-                $cur = (int)$pdo->prepare("SELECT is_active FROM users WHERE id=?")->execute([$uid]) && $pdo->query("SELECT is_active FROM users WHERE id=$uid")->fetchColumn();
                 $pdo->prepare("UPDATE users SET is_active = NOT is_active WHERE id=?")->execute([$uid]);
                 $msg = 'User status toggled.';
             }
@@ -70,16 +105,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
         } elseif ($action === 'change_role' && $uid) {
-            $role = in_array($_POST['role']??'', ['customer','employee','admin']) ? $_POST['role'] : 'customer';
-            if ($uid === getUserId() && $role !== 'admin') {
-                $err = 'You cannot change your own role.';
+            $role = toDbRole((string)($_POST['role'] ?? 'user'));
+            if ($uid === getUserId() && normalizeRole($role) !== 'administrator') {
+                $err = 'You cannot change your own role from administrator.';
             } else {
                 $pdo->prepare("UPDATE users SET role=? WHERE id=?")->execute([$role,$uid]);
                 $msg = 'Role updated.';
             }
+        } else {
+            $err = 'Unsupported action.';
         }
 
-    } catch (Exception $e) {
+    } catch (RuntimeException $e) {
+        $err = $e->getMessage();
+    } catch (Throwable $e) {
+        error_log('Admin users page error: ' . $e->getMessage());
         $err = 'Database error. Ensure the database is connected.';
     }
 
@@ -102,13 +142,17 @@ try {
 
 $flashMsg = $_GET['msg'] ?? $msg;
 $flashErr = $err;
+
+function normalizedRoleForSelect(string $dbRole): string {
+    return normalizeRole($dbRole);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Users – Admin Panel</title>
+    <title>Users – Administrator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -116,6 +160,7 @@ $flashErr = $err;
     <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
@@ -128,47 +173,41 @@ $flashErr = $err;
                 Pomegranate
             </a>
             <div class="sidebar-role-badge role-admin">
-                <i class="bi bi-shield-lock"></i> Admin
+                <i class="bi bi-shield-lock"></i> Administrator
             </div>
         </div>
         <nav class="sidebar-nav">
-            <div class="sidebar-section-label">Overview</div>
-            <a href="index.php"    class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <div class="sidebar-section-label">Users</div>
             <a href="users.php"    class="sidebar-link active"><i class="bi bi-people"></i> Users</a>
-            <a href="orders.php"   class="sidebar-link"><i class="bi bi-receipt"></i> Orders</a>
-            <a href="products.php" class="sidebar-link"><i class="bi bi-box-seam"></i> Products</a>
-            <div class="sidebar-section-label">Analytics</div>
-            <a href="analytics.php" class="sidebar-link"><i class="bi bi-bar-chart-line"></i> Analytics</a>
-            <a href="reports.php"   class="sidebar-link"><i class="bi bi-file-earmark-text"></i> Reports</a>
-            <div class="sidebar-section-label">System</div>
-            <a href="settings.php" class="sidebar-link"><i class="bi bi-gear"></i> Settings</a>
-            <a href="logs.php"     class="sidebar-link"><i class="bi bi-journal-text"></i> Activity Logs</a>
             <div class="sidebar-section-label">Employee View</div>
-            <a href="../employee/index.php" class="sidebar-link"><i class="bi bi-person-badge"></i> Employee Dashboard</a>
+            <a href="../employee/products.php" class="sidebar-link"><i class="bi bi-person-badge"></i> Employee Products</a>
             <a href="/catalog.php"          class="sidebar-link"><i class="bi bi-grid-3x3-gap"></i> View Storefront</a>
         </nav>
         <div class="sidebar-footer">
-            <a href="/logout.php" class="sidebar-user">
-                <div class="sidebar-avatar" style="background:linear-gradient(135deg,#f87171,#818cf8);">
-                    <?= strtoupper(substr(getUsername(),0,1)) ?>
-                </div>
-                <div class="sidebar-user-info">
-                    <div class="name"><?= h(getFullName()) ?></div>
-                    <div class="role">Sign out</div>
-                </div>
-                <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
-            </a>
+            <form method="POST" action="/logout.php" class="m-0">
+                <?= csrfInput() ?>
+                <button type="submit" class="sidebar-user sidebar-user-btn">
+                    <div class="sidebar-avatar" style="background:linear-gradient(135deg,#f87171,#818cf8);">
+                        <?= strtoupper(substr(getUsername(),0,1)) ?>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <div class="name"><?= h(getFullName()) ?></div>
+                        <div class="role">Sign out</div>
+                    </div>
+                    <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
+                </button>
+            </form>
         </div>
     </aside>
 
     <!-- ── MAIN ── -->
-    <div class="dash-main">
+    <div id="main-content" class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title">User Management</span>
             </div>
-            <button class="btn-dash-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <button type="button" class="btn-dash-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
                 <i class="bi bi-person-plus"></i> Add User
             </button>
         </div>
@@ -194,6 +233,7 @@ $flashErr = $err;
                         <i class="bi bi-search"></i>
                         <input type="text" class="form-control-dark" placeholder="Search users…"
                                style="padding-left:2.25rem;width:220px;font-size:.82rem;"
+                               aria-label="Search users table"
                                data-table-search="users-table">
                     </div>
                 </div>
@@ -213,11 +253,17 @@ $flashErr = $err;
                         </thead>
                         <tbody>
                             <?php foreach ($users as $u): ?>
+                            <?php
+                                $normalizedRole = normalizedRoleForSelect((string)$u['role']);
+                                $roleClass = $normalizedRole === 'administrator'
+                                    ? 'status-admin'
+                                    : ($normalizedRole === 'employee' ? 'status-employee' : 'status-active');
+                            ?>
                             <tr>
                                 <td class="text-white-50"><?= $u['id'] ?></td>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <div class="sidebar-avatar" style="width:32px;height:32px;font-size:.8rem;<?= $u['role']==='admin'?'background:linear-gradient(135deg,#f87171,#818cf8);':'' ?>">
+                                        <div class="sidebar-avatar" style="width:32px;height:32px;font-size:.8rem;<?= $normalizedRole==='administrator'?'background:linear-gradient(135deg,#f87171,#818cf8);':'' ?>">
                                             <?= strtoupper(substr($u['username'],0,1)) ?>
                                         </div>
                                         <div>
@@ -229,19 +275,21 @@ $flashErr = $err;
                                 <td class="text-white-50" style="font-size:.8rem;"><?= h($u['email']) ?></td>
                                 <td>
                                     <form method="POST" style="display:inline;">
+                                        <?= csrfInput() ?>
                                         <input type="hidden" name="action"  value="change_role">
                                         <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                        <select name="role" class="form-control-dark status-badge status-<?= $u['role'] ?>"
+                                        <select name="role" class="form-control-dark status-badge <?= $roleClass ?>"
                                                 onchange="this.form.submit()"
                                                 style="cursor:pointer;font-size:.72rem;padding:.25rem .5rem;width:auto;border:none;background:transparent;">
-                                            <option value="customer"  <?= $u['role']==='customer' ?'selected':'' ?>>Customer</option>
-                                            <option value="employee"  <?= $u['role']==='employee' ?'selected':'' ?>>Employee</option>
-                                            <option value="admin"     <?= $u['role']==='admin'    ?'selected':'' ?>>Admin</option>
+                                            <option value="user"           <?= $normalizedRole==='user'          ?'selected':'' ?>>User</option>
+                                            <option value="employee"       <?= $normalizedRole==='employee'      ?'selected':'' ?>>Employee</option>
+                                            <option value="administrator"  <?= $normalizedRole==='administrator' ?'selected':'' ?>>Administrator</option>
                                         </select>
                                     </form>
                                 </td>
                                 <td>
                                     <form method="POST" style="display:inline;">
+                                        <?= csrfInput() ?>
                                         <input type="hidden" name="action"  value="toggle_status">
                                         <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
                                         <button type="submit" class="status-badge <?= $u['is_active'] ? 'status-active' : 'status-inactive' ?>"
@@ -259,21 +307,23 @@ $flashErr = $err;
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
-                                        <button class="btn-icon" title="Edit user"
+                                        <button type="button" class="btn-icon" title="Edit user" aria-label="Edit user <?= h($u['username']) ?>"
                                                 onclick="openEditUser(<?= htmlspecialchars(json_encode($u), ENT_QUOTES) ?>)">
                                             <i class="bi bi-pencil"></i>
                                         </button>
                                         <?php if ($u['id'] !== getUserId()): ?>
                                         <form method="POST" style="display:inline;">
+                                            <?= csrfInput() ?>
                                             <input type="hidden" name="action"  value="delete">
                                             <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
                                             <button type="submit" class="btn-icon danger"
-                                                    data-confirm="Permanently delete user '<?= h($u['username']) ?>'? This cannot be undone.">
+                                                    data-confirm="Permanently delete user '<?= h($u['username']) ?>'? This cannot be undone."
+                                                    aria-label="Delete user <?= h($u['username']) ?>">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
                                         <?php else: ?>
-                                        <button class="btn-icon" disabled title="Cannot delete yourself" style="opacity:.35;">
+                                        <button type="button" class="btn-icon" disabled title="Cannot delete yourself" aria-label="Cannot delete your own account" style="opacity:.35;">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                         <?php endif; ?>
@@ -297,34 +347,35 @@ $flashErr = $err;
                 <h5 class="modal-title fw-bold text-white">
                     <i class="bi bi-person-plus me-2" style="color:var(--cyan);"></i>Add New User
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="users.php">
+                <?= csrfInput() ?>
                 <input type="hidden" name="action" value="add">
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Full Name</label>
-                            <input type="text" name="full_name" class="form-control-dark" placeholder="John Doe">
+                            <input type="text" name="full_name" class="form-control-dark" placeholder="John Doe" maxlength="100">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Username *</label>
-                            <input type="text" name="username" class="form-control-dark" placeholder="johndoe" required>
+                            <input type="text" name="username" class="form-control-dark" placeholder="johndoe" required minlength="3" maxlength="50" pattern="[A-Za-z0-9_]+">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Email *</label>
                             <input type="email" name="email" class="form-control-dark" placeholder="john@example.com" required>
                         </div>
                         <div class="col-12">
-                            <label class="form-label text-white-50 small fw-semibold">Password * (min 8 chars)</label>
+                            <label class="form-label text-white-50 small fw-semibold">Password * (min 8 chars, uppercase + number)</label>
                             <input type="password" name="password" class="form-control-dark" placeholder="Password" required minlength="8">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Role</label>
                             <select name="role" class="form-control-dark" style="cursor:pointer;">
-                                <option value="customer">Customer</option>
+                                <option value="user">User</option>
                                 <option value="employee">Employee</option>
-                                <option value="admin">Admin</option>
+                                <option value="administrator">Administrator</option>
                             </select>
                         </div>
                     </div>
@@ -346,16 +397,17 @@ $flashErr = $err;
                 <h5 class="modal-title fw-bold text-white">
                     <i class="bi bi-pencil me-2" style="color:var(--purple);"></i>Edit User
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="users.php" id="editUserForm">
+                <?= csrfInput() ?>
                 <input type="hidden" name="action" value="edit">
                 <input type="hidden" name="user_id" id="edit_uid">
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Full Name</label>
-                            <input type="text" name="full_name" id="edit_full_name" class="form-control-dark">
+                            <input type="text" name="full_name" id="edit_full_name" class="form-control-dark" maxlength="100">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-white-50 small fw-semibold">Email</label>
@@ -364,9 +416,9 @@ $flashErr = $err;
                         <div class="col-sm-6">
                             <label class="form-label text-white-50 small fw-semibold">Role</label>
                             <select name="role" id="edit_role" class="form-control-dark" style="cursor:pointer;">
-                                <option value="customer">Customer</option>
+                                <option value="user">User</option>
                                 <option value="employee">Employee</option>
-                                <option value="admin">Admin</option>
+                                <option value="administrator">Administrator</option>
                             </select>
                         </div>
                         <div class="col-sm-6 d-flex align-items-end">
@@ -399,7 +451,8 @@ function openEditUser(u) {
     document.getElementById('edit_uid').value       = u.id;
     document.getElementById('edit_full_name').value = u.full_name || '';
     document.getElementById('edit_email').value     = u.email || '';
-    document.getElementById('edit_role').value      = u.role || 'customer';
+    const roleMap = { customer: 'user', user: 'user', employee: 'employee', admin: 'administrator', administrator: 'administrator' };
+    document.getElementById('edit_role').value      = roleMap[u.role] || 'user';
     document.getElementById('edit_active').checked  = !!parseInt(u.is_active);
     new bootstrap.Modal(document.getElementById('editUserModal')).show();
 }

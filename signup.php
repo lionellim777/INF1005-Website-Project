@@ -1,41 +1,47 @@
 <?php
 require_once "inc/auth.inc.php";
 
-if (isLoggedIn()) { header('Location: /index.php'); exit; }
+if (isLoggedIn()) { header('Location: ' . getRoleHomePath()); exit; }
 
 $errors = [];
 $success = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fullName  = trim(htmlspecialchars($_POST['full_name'] ?? '', ENT_QUOTES, 'UTF-8'));
+    $fullName  = trim((string)($_POST['full_name'] ?? ''));
     $username  = trim($_POST['username'] ?? '');
-    $email     = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $email     = strtolower(trim((string)($_POST['email'] ?? '')));
     $password  = $_POST['password'] ?? '';
     $confirm   = $_POST['confirm_password'] ?? '';
 
-    // Validate
-    if (!$fullName)                          $errors[] = 'Full name is required.';
-    if (!$username || strlen($username) < 3) $errors[] = 'Username must be at least 3 characters.';
-    if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) $errors[] = 'Username may only contain letters, numbers, and underscores.';
-    if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Enter a valid email address.';
-    if (strlen($password) < 8)               $errors[] = 'Password must be at least 8 characters.';
-    if (!preg_match('/[A-Z]/', $password))   $errors[] = 'Password must contain an uppercase letter.';
-    if (!preg_match('/[0-9]/', $password))   $errors[] = 'Password must contain a number.';
-    if ($password !== $confirm)              $errors[] = 'Passwords do not match.';
+    try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
 
-    if (empty($errors)) {
-        try {
+        // Validate
+        if (!$fullName)                            $errors[] = 'Full name is required.';
+        if (strlen($fullName) > 100)            $errors[] = 'Full name must be 100 characters or fewer.';
+        if (!preg_match('/^[a-zA-Z0-9 .,\-\'"]+$/', $fullName)) $errors[] = 'Full name contains unsupported characters.';
+        if (!$username || strlen($username) < 3)   $errors[] = 'Username must be at least 3 characters.';
+        if (strlen($username) > 50)                $errors[] = 'Username must be 50 characters or fewer.';
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) $errors[] = 'Username may only contain letters, numbers, and underscores.';
+        if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = 'Enter a valid email address.';
+        if (strlen($password) < 8)                 $errors[] = 'Password must be at least 8 characters.';
+        if (!preg_match('/[A-Z]/', $password))     $errors[] = 'Password must contain an uppercase letter.';
+        if (!preg_match('/[0-9]/', $password))     $errors[] = 'Password must contain a number.';
+        if ($password !== $confirm)                $errors[] = 'Passwords do not match.';
+
+        if (empty($errors)) {
             $result = registerUser($username, $email, $password, $fullName);
             if ($result['success']) {
                 header('Location: /login.php?registered=1');
                 exit;
-            } else {
-                $errors[] = $result['error'];
             }
-        } catch (Throwable $e) {
-            error_log('Signup error: ' . $e->getMessage());
-            $errors[] = 'Signup is temporarily unavailable. Please try again later.';
+            $errors[] = $result['error'];
         }
+    } catch (RuntimeException $e) {
+        $errors[] = $e->getMessage();
+    } catch (Throwable $e) {
+        error_log('Signup error: ' . $e->getMessage());
+        $errors[] = 'Signup is temporarily unavailable. Please try again later.';
     }
 }
 ?>
@@ -54,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include "inc/nav.inc.php"; ?>
 
-<main class="auth-page" style="padding:2rem 0;">
+<main id="main-content" class="auth-page" style="padding:2rem 0;">
     <div class="container">
         <div class="auth-card" style="max-width:500px;">
             <!-- Header -->
@@ -78,36 +84,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST" action="/signup.php" novalidate>
+                <?= csrfInput() ?>
                 <div class="row g-3">
                     <div class="col-12">
-                        <label class="form-label text-white-50 small fw-semibold">Full Name</label>
-                        <input type="text" name="full_name" class="form-control-dark"
+                        <label for="signup_full_name" class="form-label text-white-50 small fw-semibold">Full Name</label>
+                        <input type="text" name="full_name" id="signup_full_name" class="form-control-dark"
                                placeholder="John Doe" required
                                value="<?= h($_POST['full_name'] ?? '') ?>">
                     </div>
                     <div class="col-12">
-                        <label class="form-label text-white-50 small fw-semibold">Username</label>
-                        <input type="text" name="username" class="form-control-dark"
+                        <label for="signup_username" class="form-label text-white-50 small fw-semibold">Username</label>
+                        <input type="text" name="username" id="signup_username" class="form-control-dark"
                                placeholder="johndoe123" required
                                value="<?= h($_POST['username'] ?? '') ?>"
                                autocomplete="username">
                     </div>
                     <div class="col-12">
-                        <label class="form-label text-white-50 small fw-semibold">Email Address</label>
-                        <input type="email" name="email" class="form-control-dark"
+                        <label for="signup_email" class="form-label text-white-50 small fw-semibold">Email Address</label>
+                        <input type="email" name="email" id="signup_email" class="form-control-dark"
                                placeholder="you@example.com" required
                                value="<?= h($_POST['email'] ?? '') ?>"
                                autocomplete="email">
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label text-white-50 small fw-semibold">Password</label>
-                        <input type="password" name="password" id="password" class="form-control-dark"
+                        <label for="signup_password" class="form-label text-white-50 small fw-semibold">Password</label>
+                        <input type="password" name="password" id="signup_password" class="form-control-dark"
                                placeholder="Min. 8 characters" required
                                autocomplete="new-password">
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label text-white-50 small fw-semibold">Confirm Password</label>
-                        <input type="password" name="confirm_password" class="form-control-dark"
+                        <label for="signup_confirm_password" class="form-label text-white-50 small fw-semibold">Confirm Password</label>
+                        <input type="password" name="confirm_password" id="signup_confirm_password" class="form-control-dark"
                                placeholder="Repeat password" required
                                autocomplete="new-password">
                     </div>
@@ -143,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="js/main.js"></script>
 <script>
 // Password strength meter
-document.getElementById('password')?.addEventListener('input', function() {
+document.getElementById('signup_password')?.addEventListener('input', function() {
     const val    = this.value;
     const bars   = document.querySelectorAll('.strength-bar');
     const label  = document.getElementById('strength-label');

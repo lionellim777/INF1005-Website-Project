@@ -14,6 +14,7 @@
 
 <?php include "inc/nav.inc.php"; ?>
 
+<main id="main-content">
 <!-- ═══════════════════════════════════════════════════════════
      HERO
 ═══════════════════════════════════════════════════════════ -->
@@ -178,6 +179,8 @@
         </div>
     </div>
 </section>
+
+</main>
 
 <?php include "inc/footer.inc.php"; ?>
 

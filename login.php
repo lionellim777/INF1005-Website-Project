@@ -3,38 +3,48 @@ require_once "inc/auth.inc.php";
 
 // Redirect if already logged in
 if (isLoggedIn()) {
-    $role = getRole();
-    header('Location: ' . ($role === 'admin' ? '/admin/index.php'
-        : ($role === 'employee' ? '/employee/index.php' : '/index.php')));
+    header('Location: ' . getRoleHomePath());
     exit;
 }
 
 $error = '';
-$redirect = h($_GET['redirect'] ?? '/index.php');
+$redirect = sanitizeRedirectPath($_GET['redirect'] ?? '/profile.php');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF check (simple token approach)
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
+    $redirect = sanitizeRedirectPath($_POST['redirect'] ?? $redirect);
 
-    if (!$username || !$password) {
-        $error = 'Please fill in all fields.';
-    } else {
-        try {
+    try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
+        if (!$username || !$password) {
+            $error = 'Please fill in all fields.';
+        } else {
             $result = loginUser($username, $password);
             if ($result['success']) {
-                $dest = $result['role'] === 'admin'    ? '/admin/index.php'
-                      : ($result['role'] === 'employee' ? '/employee/index.php'
-                      : (filter_var($redirect, FILTER_VALIDATE_URL) ? $redirect : '/index.php'));
+                $role = $result['role'] ?? getRole();
+                $dest = in_array($role, ['administrator', 'employee'], true)
+                    ? getRoleHomePath($role)
+                    : $redirect;
+
+                if (in_array($dest, ['/login.php', '/signup.php', '/logout.php'], true)) {
+                    $dest = '/index.php';
+                }
+
                 header('Location: ' . $dest);
                 exit;
-            } else {
-                $error = $result['error'];
             }
-        } catch (Throwable $e) {
-            error_log('Login error: ' . $e->getMessage());
-            $error = 'Login is temporarily unavailable. Please try again later.';
+            $error = $result['error'] ?? 'Invalid username or password.';
         }
+    } catch (RuntimeException $e) {
+        $error = $e->getMessage();
+    } catch (Throwable $e) {
+        try {
+            error_log('Login error: ' . $e->getMessage());
+        } catch (Throwable) {
+            // Ignore logging failures
+        }
+        $error = 'Login is temporarily unavailable. Please try again later.';
     }
 }
 ?>
@@ -53,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php include "inc/nav.inc.php"; ?>
 
-<main class="auth-page">
+<main id="main-content" class="auth-page">
     <div class="container">
         <div class="auth-card">
             <!-- Header -->
@@ -82,27 +92,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form method="POST" action="/login.php" novalidate>
                 <input type="hidden" name="redirect" value="<?= h($redirect) ?>">
+                <?= csrfInput() ?>
 
                 <div class="mb-3">
-                    <label class="form-label text-white-50 small fw-semibold">Username or Email</label>
-                    <input type="text" name="username" class="form-control-dark"
+                    <label for="login_username" class="form-label text-white-50 small fw-semibold">Username or Email</label>
+                    <input type="text" name="username" id="login_username" class="form-control-dark"
                            placeholder="Enter username or email" required
                            value="<?= h($_POST['username'] ?? '') ?>"
                            autocomplete="username">
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label text-white-50 small fw-semibold d-flex justify-content-between">
+                    <label for="login_password" class="form-label text-white-50 small fw-semibold d-flex justify-content-between">
                         Password
                         <a href="#" class="text-white-50 text-decoration-none" style="font-size:.8rem;">Forgot password?</a>
                     </label>
                     <div class="position-relative">
-                        <input type="password" name="password" id="password" class="form-control-dark"
+                        <input type="password" name="password" id="login_password" class="form-control-dark"
                                placeholder="Enter password" required autocomplete="current-password">
                         <button type="button" onclick="togglePassword()"
                                 class="btn-ghost border-0 position-absolute end-0 top-50 translate-middle-y me-2 p-1"
                                 style="background:transparent;" aria-label="Toggle password">
-                            <i class="bi bi-eye" id="pwd-eye"></i>
+                            <i class="bi bi-eye" id="login-pwd-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -123,9 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="bi bi-info-circle me-1"></i> Demo credentials
                 </p>
                 <div class="d-flex flex-column gap-1" style="font-size:.8rem;">
-                    <span class="text-white-50"><span class="text-white fw-semibold">Admin:</span> admin / Password1!</span>
+                    <span class="text-white-50"><span class="text-white fw-semibold">Administrator:</span> admin / Password1!</span>
                     <span class="text-white-50"><span class="text-white fw-semibold">Employee:</span> employee1 / Password1!</span>
-                    <span class="text-white-50"><span class="text-white fw-semibold">Customer:</span> johndoe / Password1!</span>
+                    <span class="text-white-50"><span class="text-white fw-semibold">User:</span> johndoe / Password1!</span>
                 </div>
             </div>
         </div>
@@ -136,8 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="js/main.js"></script>
 <script>
 function togglePassword() {
-    const input = document.getElementById('password');
-    const icon  = document.getElementById('pwd-eye');
+    const input = document.getElementById('login_password');
+    const icon  = document.getElementById('login-pwd-eye');
     if (input.type === 'password') {
         input.type = 'text';
         icon.className = 'bi bi-eye-slash';

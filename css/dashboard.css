@@ -105,6 +105,12 @@
     background: rgba(255,255,255,.04);
 }
 
+.sidebar-link:focus-visible {
+    outline: 3px solid rgba(34,211,238,.9);
+    outline-offset: -3px;
+    color: var(--text-primary);
+}
+
 .sidebar-link.active {
     color: var(--cyan);
     background: rgba(34,211,238,.08);
@@ -149,6 +155,20 @@
 }
 
 .sidebar-user:hover { background: rgba(255,255,255,.04); }
+
+.sidebar-user-btn {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sidebar-user-btn:focus-visible {
+    outline: 3px solid rgba(34,211,238,.9);
+    outline-offset: 2px;
+}
 
 .sidebar-avatar {
     width: 36px;
@@ -474,6 +494,15 @@
 .btn-dash-danger:hover {
     background: rgba(248,113,113,.2);
     color: var(--red);
+}
+
+.btn-dash-primary:focus-visible,
+.btn-dash-secondary:focus-visible,
+.btn-dash-danger:focus-visible,
+.btn-icon:focus-visible,
+.sidebar-toggle:focus-visible {
+    outline: 3px solid rgba(34,211,238,.9);
+    outline-offset: 2px;
 }
 
 .btn-icon {

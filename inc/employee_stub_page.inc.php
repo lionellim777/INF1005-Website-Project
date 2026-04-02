@@ -14,7 +14,7 @@ function employeeStubActive(string $current, string $key): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= h($stubTitle) ?> - Employee Dashboard</title>
+    <title><?= h($stubTitle) ?> - Employee</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@ function employeeStubActive(string $current, string $key): string {
     <link rel="stylesheet" href="../css/dashboard.css">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
@@ -38,8 +39,7 @@ function employeeStubActive(string $current, string $key): string {
         </div>
 
         <nav class="sidebar-nav">
-            <div class="sidebar-section-label">Overview</div>
-            <a href="index.php" class="sidebar-link<?= employeeStubActive($stubKey, 'dashboard') ?>"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <div class="sidebar-section-label">Store Ops</div>
             <a href="products.php" class="sidebar-link<?= employeeStubActive($stubKey, 'products') ?>"><i class="bi bi-box-seam"></i> Products</a>
             <a href="orders.php" class="sidebar-link<?= employeeStubActive($stubKey, 'orders') ?>"><i class="bi bi-receipt"></i> Orders</a>
 
@@ -53,25 +53,28 @@ function employeeStubActive(string $current, string $key): string {
         </nav>
 
         <div class="sidebar-footer">
-            <a href="/logout.php" class="sidebar-user">
-                <div class="sidebar-avatar"><?= strtoupper(substr(getUsername(), 0, 1)) ?></div>
-                <div class="sidebar-user-info">
-                    <div class="name"><?= h(getFullName()) ?></div>
-                    <div class="role">Sign out</div>
-                </div>
-                <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
-            </a>
+            <form method="POST" action="/logout.php" class="m-0">
+                <?= csrfInput() ?>
+                <button type="submit" class="sidebar-user sidebar-user-btn">
+                    <div class="sidebar-avatar"><?= strtoupper(substr(getUsername(), 0, 1)) ?></div>
+                    <div class="sidebar-user-info">
+                        <div class="name"><?= h(getFullName()) ?></div>
+                        <div class="role">Sign out</div>
+                    </div>
+                    <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
+                </button>
+            </form>
         </div>
     </aside>
 
-    <div class="dash-main">
+    <div id="main-content" class="dash-main">
         <div class="dash-topbar">
             <div class="d-flex align-items-center gap-3">
-                <button id="sidebar-toggle" class="sidebar-toggle"><i class="bi bi-list"></i></button>
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-label="Toggle sidebar menu"><i class="bi bi-list"></i></button>
                 <span class="page-title"><?= h($stubTitle) ?></span>
             </div>
-            <a href="index.php" class="btn-dash-secondary">
-                <i class="bi bi-speedometer2"></i> Back to Dashboard
+            <a href="products.php" class="btn-dash-secondary">
+                <i class="bi bi-house"></i> Back to Employee Home
             </a>
         </div>
 
@@ -87,10 +90,7 @@ function employeeStubActive(string $current, string $key): string {
                 <h3 class="form-card-title mb-3"><?= h($stubTitle) ?></h3>
                 <p class="text-white-50 mb-4"><?= h($stubDescription) ?></p>
                 <div class="d-flex flex-wrap gap-2">
-                    <a href="index.php" class="btn-dash-primary">
-                        <i class="bi bi-speedometer2"></i> Employee Overview
-                    </a>
-                    <a href="products.php" class="btn-dash-secondary">
+                    <a href="products.php" class="btn-dash-primary">
                         <i class="bi bi-box-seam"></i> Product Management
                     </a>
                     <a href="/catalog.php" class="btn-dash-secondary">

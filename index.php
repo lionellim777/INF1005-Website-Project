@@ -4,17 +4,27 @@ require_once "inc/auth.inc.php";
 // Handle contact form submission
 $contactSuccess = $contactError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
-    $name    = trim(htmlspecialchars($_POST['contact_name'] ?? '', ENT_QUOTES, 'UTF-8'));
-    $email   = filter_input(INPUT_POST, 'contact_email', FILTER_SANITIZE_EMAIL);
-    $message = trim(htmlspecialchars($_POST['contact_message'] ?? '', ENT_QUOTES, 'UTF-8'));
+    try {
+        requireValidCsrf($_POST['csrf_token'] ?? null);
 
-    if (!$name || !$email || !$message) {
-        $contactError = 'Please fill in all fields.';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $contactError = 'Please enter a valid email address.';
-    } else {
-        // In production: store in DB or send email
-        $contactSuccess = "Thanks, {$name}! We'll be in touch soon.";
+        $name    = trim((string)($_POST['contact_name'] ?? ''));
+        $email   = strtolower(trim((string)($_POST['contact_email'] ?? '')));
+        $message = trim((string)($_POST['contact_message'] ?? ''));
+
+        if (!$name || !$email || !$message) {
+            $contactError = 'Please fill in all fields.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $contactError = 'Please enter a valid email address.';
+        } elseif (strlen($name) > 100) {
+            $contactError = 'Name must be 100 characters or fewer.';
+        } elseif (strlen($message) > 2000) {
+            $contactError = 'Message is too long. Please keep it under 2000 characters.';
+        } else {
+            // In production: store in DB or send email
+            $contactSuccess = "Thanks, {$name}! We'll be in touch soon.";
+        }
+    } catch (RuntimeException $e) {
+        $contactError = $e->getMessage();
     }
 }
 
@@ -50,6 +60,7 @@ try {
 
 <?php include "inc/nav.inc.php"; ?>
 
+<main id="main-content">
 <!-- ═══════════════════════════════════════════════════════════
      HERO SECTION
 ═══════════════════════════════════════════════════════════ -->
@@ -359,6 +370,7 @@ try {
                     <?php endif; ?>
 
                     <form method="POST" action="#contact" novalidate>
+                        <?= csrfInput() ?>
                         <div class="row g-3">
                             <div class="col-sm-6">
                                 <input type="text" name="contact_name" class="form-control-dark"
@@ -387,6 +399,8 @@ try {
         </div>
     </div>
 </section>
+
+</main>
 
 <?php include "inc/footer.inc.php"; ?>
 

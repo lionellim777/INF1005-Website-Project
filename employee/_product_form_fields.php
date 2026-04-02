@@ -5,11 +5,11 @@
 <div class="row g-3">
     <div class="col-12">
         <label class="form-label text-white-50 small fw-semibold">Product Name *</label>
-        <input type="text" name="name" class="form-control-dark" placeholder="e.g. NeoPulse X2" required>
+        <input type="text" name="name" class="form-control-dark" placeholder="e.g. NeoPulse X2" required maxlength="100">
     </div>
     <div class="col-12">
         <label class="form-label text-white-50 small fw-semibold">Description</label>
-        <textarea name="description" class="form-control-dark" placeholder="Short product description…" rows="3"></textarea>
+        <textarea name="description" class="form-control-dark" placeholder="Short product description…" rows="3" maxlength="2000"></textarea>
     </div>
     <div class="col-sm-4">
         <label class="form-label text-white-50 small fw-semibold">Price ($) *</label>
@@ -28,7 +28,7 @@
         <select name="category_id" class="form-control-dark" style="cursor:pointer;">
             <option value="">— None —</option>
             <?php foreach ($categories as $cat): ?>
-            <option value="<?= $cat['id'] ?>"><?= h($cat['name']) ?></option>
+            <option value="<?= (int)$cat['id'] ?>"><?= h($cat['name']) ?></option>
             <?php endforeach; ?>
         </select>
     </div>

@@ -5,13 +5,11 @@ require_once __DIR__ . '/auth.inc.php';
 $role       = getRole();
 $loggedIn   = isLoggedIn();
 $username   = getUsername();
-$cartCount  = getCartCount();
-$isEmp      = isEmployee();
-$isAdm      = isAdmin();
 
 // Determine active page for nav highlighting
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 <nav class="navbar navbar-expand-lg sticky-top navbar-dark">
     <div class="container">
         <!-- Brand -->
@@ -40,60 +38,33 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 <li class="nav-item">
                     <a class="nav-link <?= $currentPage==='about.php'?'active':'' ?>" href="/about.php">About</a>
                 </li>
-
-                <?php if ($isEmp): ?>
-                <!-- Employee / Admin nav links -->
+                <?php if ($loggedIn): ?>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-1 <?= strpos($_SERVER['PHP_SELF'],'/employee/')!==false?'active':'' ?>"
-                       href="/employee/index.php">
-                        <i class="bi bi-speedometer2" style="font-size:.85rem;"></i> Dashboard
-                    </a>
+                    <a class="nav-link <?= $currentPage==='profile.php'?'active':'' ?>" href="/profile.php">Profile</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-1" href="/employee/products.php">
-                        <i class="bi bi-box-seam" style="font-size:.85rem;"></i> Products
-                    </a>
+                    <a class="nav-link <?= $currentPage==='orders.php'?'active':'' ?>" href="/orders.php">Orders</a>
                 </li>
                 <?php endif; ?>
 
-                <?php if ($isAdm): ?>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-1 <?= strpos($_SERVER['PHP_SELF'],'/admin/')!==false?'active':'' ?>"
-                       href="/admin/index.php">
-                        <i class="bi bi-shield-lock" style="font-size:.85rem;"></i> Admin
-                    </a>
-                </li>
-                <?php endif; ?>
             </ul>
 
             <!-- Right side actions -->
             <div class="d-flex align-items-center gap-2">
                 <?php if ($loggedIn): ?>
-                    <?php if ($role === 'customer'): ?>
-                    <!-- Cart icon for customers -->
-                    <a href="/cart.php" class="btn btn-ghost cart-badge position-relative"
-                       aria-label="Cart">
-                        <i class="bi bi-bag fs-5"></i>
-                        <?php if ($cartCount > 0): ?>
-                        <span class="badge-dot"><?= $cartCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <?php endif; ?>
-
                     <!-- User dropdown -->
                     <div class="dropdown">
                         <button class="btn btn-ghost d-flex align-items-center gap-2"
-                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open account menu">
                             <span class="d-flex align-items-center justify-content-center rounded-circle"
                                   style="width:30px;height:30px;background:linear-gradient(135deg,#22d3ee,#818cf8);font-size:.8rem;font-weight:700;">
-                                <?= strtoupper(substr($username, 0, 1)) ?>
+                                <?= strtoupper(substr($username ?: 'U', 0, 1)) ?>
                             </span>
                             <span class="d-none d-md-inline text-white-50 small"><?= h($username) ?></span>
                             <i class="bi bi-chevron-down small text-white-50"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end"
                             style="background:#0c1220;border:1px solid rgba(255,255,255,.1);min-width:180px;">
-                            <?php if ($role === 'customer'): ?>
                             <li>
                                 <a class="dropdown-item text-white-50 d-flex align-items-center gap-2" href="/profile.php">
                                     <i class="bi bi-person"></i> Profile
@@ -101,22 +72,24 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                             </li>
                             <li>
                                 <a class="dropdown-item text-white-50 d-flex align-items-center gap-2" href="/orders.php">
-                                    <i class="bi bi-receipt"></i> My Orders
+                                    <i class="bi bi-receipt"></i> Purchase History
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider" style="border-color:rgba(255,255,255,.08);"></li>
-                            <?php endif; ?>
                             <li>
                                 <span class="dropdown-item text-muted small" style="font-size:.75rem;letter-spacing:.05em;text-transform:uppercase;">
-                                    <?= ucfirst($role) ?>
+                                    <?= h(getRoleLabel($role)) ?>
                                 </span>
                             </li>
                             <li>
-                                <a class="dropdown-item d-flex align-items-center gap-2"
-                                   href="/logout.php"
-                                   style="color:#f87171;">
-                                    <i class="bi bi-box-arrow-right"></i> Log out
-                                </a>
+                                <form method="POST" action="/logout.php" class="m-0">
+                                    <?= csrfInput() ?>
+                                    <button type="submit"
+                                            class="dropdown-item dropdown-item-btn"
+                                            style="color:#f87171;">
+                                        <i class="bi bi-box-arrow-right"></i> Log out
+                                    </button>
+                                </form>
                             </li>
                         </ul>
                     </div>
@@ -130,3 +103,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </div>
     </div>
 </nav>
+<script>
+window.APP_CSRF_TOKEN = <?= json_encode(getCsrfToken(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+</script>

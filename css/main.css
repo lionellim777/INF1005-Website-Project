@@ -22,7 +22,7 @@
 
     --text-primary:   #ffffff;
     --text-secondary: rgba(255,255,255,.6);
-    --text-muted:     rgba(255,255,255,.35);
+    --text-muted:     rgba(255,255,255,.56);
 
     --border:        rgba(255,255,255,.08);
     --border-bright: rgba(255,255,255,.18);
@@ -48,6 +48,26 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     line-height: 1.6;
+}
+
+.skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -120%;
+    z-index: 1200;
+    background: #fff;
+    color: #050a14;
+    border-radius: 8px;
+    padding: .55rem .9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: top .2s ease;
+}
+
+.skip-link:focus-visible {
+    top: 1rem;
+    outline: 3px solid rgba(34,211,238,.9);
+    outline-offset: 2px;
 }
 
 /* Selection highlight */
@@ -148,6 +168,21 @@ body {
     border-color: var(--cyan);
     color: var(--cyan) !important;
     background: rgba(34,211,238,.07);
+}
+
+.dropdown-item-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+}
+
+.dropdown-item-btn:hover {
+    background: rgba(255,255,255,.07);
 }
 
 .cart-badge {
@@ -291,6 +326,21 @@ body {
     border-color: var(--cyan);
     background: rgba(34,211,238,.08);
     transform: translateY(-3px);
+}
+
+.navbar .nav-link:focus-visible,
+.btn-glow:focus-visible,
+.btn-ghost:focus-visible,
+.btn-primary-glow:focus-visible,
+.btn-outline-glow:focus-visible,
+.filter-btn:focus-visible,
+.btn-add-cart:focus-visible,
+.navbar-toggler:focus-visible,
+.dropdown-item:focus-visible,
+.dropdown-item-btn:focus-visible,
+.form-control-dark:focus-visible {
+    outline: 3px solid rgba(34,211,238,.9);
+    outline-offset: 2px;
 }
 
 .hero-scroll-hint {
