@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin – Order Management
+ * Admin – Order Management (Phase 4)
  * View all orders and update their statuses.
  * Access: role_id >= 3 (employee AND admin).
  *   - Employees: can update order status only.
@@ -207,6 +207,7 @@ $pageTitle   = 'Orders – Admin – ' . SITE_NAME;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= appUrl('/admin/css/admin.css') ?>">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="admin-body">
 
@@ -295,6 +296,19 @@ $pageTitle   = 'Orders – Admin – ' . SITE_NAME;
                             <?php endif; ?>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 ORDER STATUS BAR CHART
+                 ============================================================ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
+                    <h6 class="fw-semibold mb-0"><i class="bi bi-bar-chart-horizontal me-2"></i>Order Status Breakdown</h6>
+                    <small class="text-muted"><?= $totalOrders ?> total orders</small>
+                </div>
+                <div class="card-body" style="height:200px;">
+                    <canvas id="orderStatusChart" aria-label="Horizontal bar chart showing order counts by status" role="img"></canvas>
                 </div>
             </div>
 
@@ -408,5 +422,65 @@ $pageTitle   = 'Orders – Admin – ' . SITE_NAME;
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    label: 'Orders',
+                    data: [
+                        <?= (int)($statusCounts['pending']    ?? 0) ?>,
+                        <?= (int)($statusCounts['processing'] ?? 0) ?>,
+                        <?= (int)($statusCounts['shipped']    ?? 0) ?>,
+                        <?= (int)($statusCounts['delivered']  ?? 0) ?>,
+                        <?= (int)($statusCounts['cancelled']  ?? 0) ?>
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 193, 7,   0.8)',
+                        'rgba(13,  202, 240, 0.8)',
+                        'rgba(13,  110, 253, 0.8)',
+                        'rgba(25,  135, 84,  0.8)',
+                        'rgba(220, 53,  69,  0.8)'
+                    ],
+                    borderColor: ['#ffc107','#0dcaf0','#0d6efd','#198754','#dc3545'],
+                    borderWidth:   1,
+                    borderRadius:  4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis:           'y',
+                responsive:          true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var total = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                                var pct   = total > 0 ? Math.round((ctx.parsed.x / total) * 100) : 0;
+                                return ' ' + ctx.parsed.x + ' orders (' + pct + '%)';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { family: 'Urbanist, sans-serif' } },
+                        grid:  { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        ticks: { font: { family: 'Urbanist, sans-serif' } },
+                        grid:  { display: false }
+                    }
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>

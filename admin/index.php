@@ -4,6 +4,7 @@
  * Shows summary stats: total products, low-stock items, pending orders, total users.
  * Access: role_id >= 4 (admin). Employees are redirected to orders page.
  *
+ * Phase 1 of Dalton's admin dashboard.
  */
 
 require_once __DIR__ . '/../auth/auth_helper.php';
@@ -49,6 +50,11 @@ if ($isOffline) {
         ['name' => 'Pomegranate Wireless Buds', 'stock_quantity' => 3, 'category' => 'Accessories'],
         ['name' => 'Pomegranate Watch SE',      'stock_quantity' => 1, 'category' => 'Wearables'],
     ];
+    // Order counts by status — for Chart.js doughnut on orders page
+    $orderStatusCounts = ['pending'=>1,'processing'=>2,'shipped'=>2,'delivered'=>2,'cancelled'=>0];
+    // Monthly revenue — last 6 months — for Chart.js line chart
+    $monthlyLabels  = ['Oct 2024','Nov 2024','Dec 2024','Jan 2025','Feb 2025','Mar 2025'];
+    $monthlyRevenue = [849.00, 1299.99, 2149.98, 1299.99, 849.00, 1748.98];
 } else {
     // Live DB queries — all use prepared statements (PDO)
 
@@ -75,6 +81,25 @@ if ($isOffline) {
          ORDER BY o.created_at DESC
          LIMIT 5"
     )->fetchAll();
+
+    // Order counts by status — for Chart.js bar chart
+    $orderStatusCounts = ['pending'=>0,'processing'=>0,'shipped'=>0,'delivered'=>0,'cancelled'=>0];
+    $rows = $pdo->query("SELECT status, COUNT(*) AS cnt FROM orders GROUP BY status")->fetchAll();
+    foreach ($rows as $r) { $orderStatusCounts[$r['status']] = (int)$r['cnt']; }
+
+    // Monthly revenue — last 6 months
+    $revenueRows = $pdo->query(
+        "SELECT DATE_FORMAT(created_at, '%b %Y') AS month,
+                DATE_FORMAT(created_at, '%Y-%m') AS sort_key,
+                SUM(total_amount) AS revenue
+         FROM orders
+         WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+           AND status != 'cancelled'
+         GROUP BY month, sort_key
+         ORDER BY sort_key ASC"
+    )->fetchAll();
+    $monthlyLabels  = array_column($revenueRows, 'month');
+    $monthlyRevenue = array_map(fn($r) => round((float)$r['revenue'], 2), $revenueRows);
 
     // Low stock items (stock < 5), up to 5 rows
     $stmt = $pdo->prepare(
@@ -241,6 +266,23 @@ $pageTitle   = 'Admin Dashboard – ' . SITE_NAME;
                 </div><!-- /row stat cards -->
 
                 <!-- ============================================================
+                     CHART ROW: Monthly Revenue Line Chart
+                     ============================================================ -->
+                <div class="row g-4 mb-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
+                                <h6 class="fw-semibold mb-0"><i class="bi bi-graph-up me-2"></i>Revenue – Last 6 Months</h6>
+                                <small class="text-muted">Excludes cancelled orders</small>
+                            </div>
+                            <div class="card-body" style="height:240px;">
+                                <canvas id="revenueChart" aria-label="Line chart showing monthly revenue for the last 6 months" role="img"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /chart row -->
+
+                <!-- ============================================================
                      LOWER ROW: Recent Orders + Low Stock Alerts
                      ============================================================ -->
                 <div class="row g-4">
@@ -332,6 +374,70 @@ $pageTitle   = 'Admin Dashboard – ' . SITE_NAME;
             </div><!-- /p-4 -->
         </div><!-- /admin-content -->
     </div><!-- /admin-layout -->
+
+    <!-- Chart.js — revenue line chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+    (function () {
+        var ctx = document.getElementById('revenueChart').getContext('2d');
+
+        // PHP passes data as JSON — fully escaped, no XSS risk
+        var labels  = <?= json_encode($monthlyLabels)  ?>;
+        var revenue = <?= json_encode($monthlyRevenue) ?>;
+
+        // Gradient fill under the line
+        var gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0,   'rgba(40, 102, 110, 0.25)');
+        gradient.addColorStop(1,   'rgba(40, 102, 110, 0.0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Revenue ($)',
+                    data: revenue,
+                    borderColor:     '#285f6b',
+                    backgroundColor: gradient,
+                    borderWidth:     2.5,
+                    pointBackgroundColor: '#285f6b',
+                    pointRadius:     4,
+                    pointHoverRadius:6,
+                    fill:            true,
+                    tension:         0.35      /* smooth curve */
+                }]
+            },
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ' $' + ctx.parsed.y.toLocaleString('en-US', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            font:     { family: 'Urbanist, sans-serif' },
+                            callback: function(v) { return '$' + v.toLocaleString(); }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { family: 'Urbanist, sans-serif' } },
+                        grid:  { display: false }
+                    }
+                }
+            }
+        });
+    })();
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>

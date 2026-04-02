@@ -1,6 +1,5 @@
 <?php
-putenv('APP_BASE_PATH=INF1005-Website-Project-hadi-branch');
-/**
+putenv('APP_BASE_PATH=INF1005-Website-Project');/**
  * Database Configuration
  * Uses PDO with prepared statements to prevent SQL injection.
  */
