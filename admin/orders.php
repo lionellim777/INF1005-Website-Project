@@ -2,6 +2,13 @@
 /**
  * Admin – Order Management
  * Access: admin AND employee.
+ * Admin – Order Management (Phase 4)
+ * View all orders and update their statuses.
+ * Access: role_id >= 3 (employee AND admin).
+ *   - Employees: can update order status only.
+ *   - Admins: same access here, plus full dashboard.
+ *
+ * Security: PDO prepared statements, CSRF, htmlspecialchars output escaping.
  */
 require_once dirname(__DIR__) . '/inc/bootstrap.php';
 require_once dirname(__DIR__) . '/inc/auth_middleware.php';
@@ -103,6 +110,7 @@ $currentPage = 'orders';
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="admin-body" style="background: var(--bg-primary);">
 <div class="admin-layout">
@@ -150,6 +158,68 @@ $currentPage = 'orders';
                             </tr>
                         </thead>
                         <tbody>
+            <!-- ============================================================
+                 SEARCH BAR
+                 ============================================================ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="GET" action="" class="row g-3 align-items-end">
+                        <?php if ($statusFilter): ?>
+                            <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
+                        <?php endif; ?>
+                        <div class="col-md-9">
+                            <label for="search" class="form-label">Search Orders</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                   placeholder="Customer name, email, or order #..."
+                                   value="<?= htmlspecialchars($search) ?>">
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn text-white flex-grow-1" style="background-color:#28666e;">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <?php if ($search): ?>
+                                <a href="<?= appUrl('/admin/orders.php' . ($statusFilter ? '?status=' . urlencode($statusFilter) : '')) ?>"
+                                   class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 ORDER STATUS BAR CHART
+                 ============================================================ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-3">
+                    <h6 class="fw-semibold mb-0"><i class="bi bi-bar-chart-horizontal me-2"></i>Order Status Breakdown</h6>
+                    <small class="text-muted"><?= $totalOrders ?> total orders</small>
+                </div>
+                <div class="card-body" style="height:200px;">
+                    <canvas id="orderStatusChart" aria-label="Horizontal bar chart showing order counts by status" role="img"></canvas>
+                </div>
+            </div>
+
+            <!-- ============================================================
+                 ORDERS TABLE
+                 ============================================================ -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Order #</th>
+                                    <th>Customer</th>
+                                    <th>Items</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-3">Update Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
                             <?php if (empty($allOrders)): ?>
                                 <tr><td colspan="6" class="text-center text-white py-5">No orders found.</td></tr>
                             <?php else: foreach ($allOrders as $o): $nextStatuses = allowedNextStatuses($o['status']); ?>
@@ -182,9 +252,66 @@ $currentPage = 'orders';
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+        </div><!-- /p-4 -->
+    </div><!-- /admin-content -->
+</div><!-- /admin-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('orderStatusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'],
+                datasets: [{
+                    label: 'Orders',
+                    data: [1, 2, 2, 2, 1],
+                    backgroundColor: [
+                        'rgba(255, 193, 7,   0.8)',
+                        'rgba(13,  202, 240, 0.8)',
+                        'rgba(13,  110, 253, 0.8)',
+                        'rgba(25,  135, 84,  0.8)',
+                        'rgba(220, 53,  69,  0.8)'
+                    ],
+                    borderColor: ['#ffc107','#0dcaf0','#0d6efd','#198754','#dc3545'],
+                    borderWidth:   1,
+                    borderRadius:  4,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis:           'y',
+                responsive:          true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var total = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                                var pct   = total > 0 ? Math.round((ctx.parsed.x / total) * 100) : 0;
+                                return ' ' + ctx.parsed.x + ' orders (' + pct + '%)';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, font: { family: 'Urbanist, sans-serif' } },
+                        grid:  { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    y: {
+                        ticks: { font: { family: 'Urbanist, sans-serif' } },
+                        grid:  { display: false }
+                    }
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>

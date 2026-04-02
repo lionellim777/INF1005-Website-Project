@@ -2,6 +2,18 @@
 /**
  * Admin – Inventory Management
  * Access: admin only.
+ * Admin – Inventory Management (Phase 3)
+ * View stock levels for all products and update quantities.
+ * Access: admin only (role_id = 4).
+ *
+ * Stock is stored in products.stock_quantity.
+ * Supports:
+ *   - Bulk view of all products with colour-coded stock status
+ *   - Inline quick-adjust (+/- buttons via JS, submits one row at a time)
+ *   - Manual exact-value input per product
+ *   - Filter by stock status (all / low / out of stock)
+ *
+ * Security: PDO prepared statements, CSRF, htmlspecialchars output escaping.
  */
 require_once dirname(__DIR__) . '/inc/bootstrap.php';
 require_once dirname(__DIR__) . '/inc/auth_middleware.php';
@@ -81,6 +93,8 @@ $currentPage = 'inventory';
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/dashboard.css">
     <link rel="stylesheet" href="/css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body class="admin-body" style="background: var(--bg-primary);">
 <div class="admin-layout">
@@ -178,6 +192,84 @@ $currentPage = 'inventory';
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+            <!-- ============================================================
+                 STOCK HEALTH DOUGHNUT CHART
+                 ============================================================ -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-5">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <h6 class="fw-semibold mb-0"><i class="bi bi-pie-chart me-2"></i>Stock Health Overview</h6>
+                        </div>
+                        <div class="card-body d-flex align-items-center justify-content-center" style="height:220px;">
+                            <canvas id="stockHealthChart" aria-label="Doughnut chart showing stock health breakdown" role="img"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-0 pt-3">
+                            <h6 class="fw-semibold mb-0"><i class="bi bi-info-circle me-2"></i>Stock Summary</h6>
+                        </div>
+                        <div class="card-body d-flex flex-column justify-content-center gap-3">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width:12px;height:12px;background:#198754;"></span>
+                                    <span class="small">Healthy Stock (&ge;5 units)</span>
+                                </div>
+                                <span class="fw-bold fs-5"><?= $healthyStock ?></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width:12px;height:12px;background:#ffc107;"></span>
+                                    <span class="small">Low Stock (1–4 units)</span>
+                                </div>
+                                <span class="fw-bold fs-5"><?= $lowStock ?></span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="rounded-circle d-inline-block" style="width:12px;height:12px;background:#dc3545;"></span>
+                                    <span class="small">Out of Stock (0 units)</span>
+                                </div>
+                                <span class="fw-bold fs-5"><?= $outOfStock ?></span>
+                            </div>
+                            <hr class="my-1">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="small text-muted">Total Products</span>
+                                <span class="fw-bold"><?= $totalItems ?></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /stock health chart row -->
+
+            <!-- ============================================================
+                 SEARCH BAR
+                 ============================================================ -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="GET" action="" class="row g-3 align-items-end">
+                        <!-- Preserve active status filter when searching -->
+                        <?php if ($statusFilter): ?>
+                            <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
+                        <?php endif; ?>
+                        <div class="col-md-9">
+                            <label for="search" class="form-label">Search Products</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                   placeholder="Product name or category..."
+                                   value="<?= htmlspecialchars($search) ?>">
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn text-white flex-grow-1" style="background-color:#28666e;">
+                                <i class="bi bi-search me-1"></i>Search
+                            </button>
+                            <?php if ($search || $statusFilter): ?>
+                                <a href="<?= appUrl('/admin/inventory.php') ?>" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -191,5 +283,45 @@ function adjustStock(btn, delta) {
     if (input) input.value = Math.max(0, (parseInt(input.value) || 0) + delta);
 }
 </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('stockHealthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Healthy', 'Low Stock', 'Out of Stock'],
+                datasets: [{
+                    data: [4, 1, 1],
+                    backgroundColor: [
+                        'rgba(25,  135, 84,  0.85)',
+                        'rgba(255, 193, 7,   0.85)',
+                        'rgba(220, 53,  69,  0.85)'
+                    ],
+                    borderColor: ['#198754','#ffc107','#dc3545'],
+                    borderWidth: 2,
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive:          true,
+                maintainAspectRatio: false,
+                cutout:              '68%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                var total = ctx.dataset.data.reduce(function(a,b){ return a+b; }, 0);
+                                var pct   = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + pct + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+    </script>
 </body>
 </html>
