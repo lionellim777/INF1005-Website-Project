@@ -25,10 +25,16 @@ $reference = $_GET['reference'] ?? '';
                 localStorage.removeItem('cart');
             </script>
         <?php else: ?>
-            <h4 class="fw-bold mt-3">Payment Failed</h4>
-            <p class="text-muted">Status: <strong><?= htmlspecialchars($status) ?></strong>. Please try again.</p>
-            <a href="/cart.php" class="btn btn-dark mt-2">Back to Cart</a>
-        <?php endif; ?>
+        <h4 class="fw-bold mt-3">
+            <?= $status === 'canceled' ? 'Payment Cancelled' : 'Payment Failed' ?>
+        </h4>
+        <p class="text-muted">
+            <?= $status === 'canceled' 
+                ? 'You cancelled the payment.' 
+                : 'Something went wrong. Please try again.' ?>
+        </p>
+        <a href="/cart.php" class="btn btn-dark mt-2">Back to Cart</a>
+    <?php endif; ?>
     </div>
 
     <?php 
