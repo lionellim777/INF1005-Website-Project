@@ -1,10 +1,6 @@
 <?php
 require_once "../inc/auth.inc.php";
 requireAdmin();
-<<<<<<< Updated upstream
-header('Location: /index.php?msg=' . urlencode('Admin dashboard access is disabled in this branch.'));
-exit;
-=======
 
 $msg = $err = '';
 
@@ -310,4 +306,3 @@ function showOrderDetails(o) {
 </script>
 </body>
 </html>
->>>>>>> Stashed changes

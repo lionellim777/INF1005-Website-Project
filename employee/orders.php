@@ -1,10 +1,6 @@
 <?php
 require_once "../inc/auth.inc.php";
 requireEmployee();
-<<<<<<< Updated upstream
-header('Location: /index.php?msg=' . urlencode('Employee dashboard access is disabled in this branch.'));
-exit;
-=======
 
 $orders = [];
 $statusFilter = $_GET['status'] ?? 'all';
@@ -92,14 +88,17 @@ $statuses = ['all','pending','processing','shipped','delivered','cancelled'];
             <a href="/index.php"   class="sidebar-link"><i class="bi bi-house"></i> Back to Home</a>
         </nav>
         <div class="sidebar-footer">
-            <a href="/logout.php" class="sidebar-user">
-                <div class="sidebar-avatar"><?= strtoupper(substr(getUsername(), 0, 1)) ?></div>
-                <div class="sidebar-user-info">
-                    <div class="name"><?= h(getFullName()) ?></div>
-                    <div class="role">Sign out</div>
-                </div>
-                <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
-            </a>
+            <form method="POST" action="/logout.php" class="m-0">
+                <?= csrfInput() ?>
+                <button type="submit" class="sidebar-user sidebar-user-btn">
+                    <div class="sidebar-avatar"><?= strtoupper(substr(getUsername(), 0, 1)) ?></div>
+                    <div class="sidebar-user-info">
+                        <div class="name"><?= h(getFullName()) ?></div>
+                        <div class="role">Sign out</div>
+                    </div>
+                    <i class="bi bi-box-arrow-right ms-auto text-white-50"></i>
+                </button>
+            </form>
         </div>
     </aside>
 
@@ -251,4 +250,3 @@ function showOrderDetails(o) {
 </script>
 </body>
 </html>
->>>>>>> Stashed changes
