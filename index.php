@@ -6,7 +6,7 @@ require_once __DIR__ . '/inc/support.inc.php';
 
 $featured_products = [];
 if (isset($db_conn)) {
-    $query = "SELECT id, name, `desc`, price, image_url FROM products LIMIT 4";
+    $query = "SELECT id, name, `description`, price, image_url FROM products LIMIT 4";
     $result = $db_conn->query($query);
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {

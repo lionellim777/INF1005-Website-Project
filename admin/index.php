@@ -28,7 +28,7 @@ $resProducts = $db_conn->query("SELECT COUNT(*) as c FROM products");
 $totalProducts = $resProducts ? $resProducts->fetch_assoc()['c'] : 0;
 
 // Low stock items (< 5)
-$resLowStock = $db_conn->query("SELECT COUNT(*) as c FROM products WHERE stock_quantity < 5");
+$resLowStock = $db_conn->query("SELECT COUNT(*) as c FROM products WHERE stock < 5");
 $lowStockCount = $resLowStock ? $resLowStock->fetch_assoc()['c'] : 0;
 
 // Pending orders
@@ -56,7 +56,7 @@ if ($resRecent) {
 
 // Low stock items list
 $lowStockItems = [];
-$resItems = $db_conn->query("SELECT name, stock_quantity, category FROM products WHERE stock_quantity < 5 ORDER BY stock_quantity ASC LIMIT 5");
+$resItems = $db_conn->query("SELECT name, stock, category FROM products WHERE stock < 5 ORDER BY stock ASC LIMIT 5");
 if ($resItems) {
     while ($row = $resItems->fetch_assoc()) {
         $lowStockItems[] = $row;
@@ -212,8 +212,8 @@ $pageTitle   = 'Admin Dashboard – Pomegranate';
                                             <div class="fw-semibold small text-white"><?= htmlspecialchars($item['name']) ?></div>
                                             <div class="text-white" style="font-size:0.75rem;"><?= htmlspecialchars($item['category']) ?></div>
                                         </div>
-                                        <span class="badge <?= (int)$item['stock_quantity'] === 0 ? 'bg-danger' : 'bg-warning text-dark' ?>">
-                                            <?= (int)$item['stock_quantity'] === 0 ? 'Out of stock' : (int)$item['stock_quantity'] . ' left' ?>
+                                        <span class="badge <?= (int)$item['stock'] === 0 ? 'bg-danger' : 'bg-warning text-dark' ?>">
+                                            <?= (int)$item['stock'] === 0 ? 'Out of stock' : (int)$item['stock'] . ' left' ?>
                                         </span>
                                     </li>
                                 <?php endforeach; ?>

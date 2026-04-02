@@ -14,10 +14,10 @@ $errorMsg = '';
 // POST: UPDATE STOCK
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'update_stock') {
     $productId = (int)($_POST['product_id'] ?? 0);
-    $newStock  = (int)($_POST['stock_quantity'] ?? 0);
+    $newStock  = (int)($_POST['stock'] ?? 0);
 
     if ($productId > 0 && $newStock >= 0) {
-        $stmt = $db_conn->prepare('UPDATE products SET stock_quantity = ? WHERE id = ?');
+        $stmt = $db_conn->prepare('UPDATE products SET stock = ? WHERE id = ?');
         $stmt->bind_param("ii", $newStock, $productId);
         if ($stmt->execute()) {
             $successMsg = "Stock updated successfully.";
@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'updat
 $statusFilter = $_GET['status'] ?? '';
 $search       = $_GET['search'] ?? '';
 
-$sql = 'SELECT id, name, category, stock_quantity, price, image_url FROM products WHERE 1=1';
+$sql = 'SELECT id, name, category, stock, price, image_url FROM products WHERE 1=1';
 $params = [];
 $types = "";
 
@@ -44,11 +44,11 @@ if ($search) {
     $types .= "ss";
 }
 if ($statusFilter === 'out') {
-    $sql .= ' AND stock_quantity = 0';
+    $sql .= ' AND stock = 0';
 } elseif ($statusFilter === 'low') {
-    $sql .= ' AND stock_quantity > 0 AND stock_quantity < 5';
+    $sql .= ' AND stock > 0 AND stock < 5';
 }
-$sql .= ' ORDER BY stock_quantity ASC, name ASC';
+$sql .= ' ORDER BY stock ASC, name ASC';
 
 $stmt = $db_conn->prepare($sql);
 if ($types) {
@@ -59,8 +59,8 @@ $allProducts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // Summary counts
 $totalItems   = $db_conn->query('SELECT COUNT(*) as c FROM products')->fetch_assoc()['c'] ?? 0;
-$outOfStock   = $db_conn->query('SELECT COUNT(*) as c FROM products WHERE stock_quantity = 0')->fetch_assoc()['c'] ?? 0;
-$lowStock     = $db_conn->query('SELECT COUNT(*) as c FROM products WHERE stock_quantity > 0 AND stock_quantity < 5')->fetch_assoc()['c'] ?? 0;
+$outOfStock   = $db_conn->query('SELECT COUNT(*) as c FROM products WHERE stock = 0')->fetch_assoc()['c'] ?? 0;
+$lowStock     = $db_conn->query('SELECT COUNT(*) as c FROM products WHERE stock > 0 AND stock < 5')->fetch_assoc()['c'] ?? 0;
 $healthyStock = $totalItems - $outOfStock - $lowStock;
 
 function stockStatus(int $qty): array {
@@ -148,7 +148,7 @@ $currentPage = 'inventory';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($allProducts as $p): $qty = (int)$p['stock_quantity']; $status = stockStatus($qty); ?>
+                            <?php foreach ($allProducts as $p): $qty = (int)$p['stock']; $status = stockStatus($qty); ?>
                             <tr>
                                 <td>
                                     <div class="fw-semibold text-white"><?= htmlspecialchars($p['name']) ?></div>
@@ -165,10 +165,11 @@ $currentPage = 'inventory';
                                 </td>
                                 <td>
                                     <form method="POST" class="d-flex justify-content-end gap-1">
+                                        <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                                         <input type="hidden" name="action" value="update_stock">
                                         <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                                         <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="adjustStock(this, -1)"><i class="bi bi-dash"></i></button>
-                                        <input type="number" class="form-control form-control-sm text-center stock-input bg-dark text-white border-secondary" name="stock_quantity" value="<?= $qty ?>" min="0" style="width:60px;">
+                                        <input type="number" class="form-control form-control-sm text-center stock-input bg-dark text-white border-secondary" name="stock" value="<?= $qty ?>" min="0" style="width:60px;">
                                         <button type="button" class="btn btn-sm btn-outline-secondary px-2" onclick="adjustStock(this, 1)"><i class="bi bi-plus"></i></button>
                                         <button type="submit" class="btn-dash-primary ms-1"><i class="bi bi-check-lg"></i></button>
                                     </form>

@@ -6,6 +6,10 @@ require_once __DIR__ . '/bootstrap.php';
  * Redirects to the login page if not authenticated.
  */
 function require_login() {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        validate_csrf();
+    }
+    
     if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
         // Optional UX boost: Store where they were trying to go so the login page can redirect them back later
         $_SESSION['redirect_to'] = $_SERVER['REQUEST_URI'];
@@ -41,5 +45,29 @@ function require_role($allowed_roles) {
  */
 function is_logged_in() {
     return (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true);
+}
+
+/**
+ * Validates the CSRF token on POST requests.
+ * Throws a 403 Forbidden error and halts execution if the token is missing or invalid.
+ */
+function validate_csrf() {
+    // We only need to check CSRF on state-changing requests (like POST)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        
+        $sessionToken = $_SESSION['csrf_token'] ?? '';
+        $postToken    = $_POST['csrf_token'] ?? '';
+
+        // Check if tokens exist and perfectly match securely
+        if (empty($sessionToken) || empty($postToken) || !hash_equals($sessionToken, $postToken)) {
+            
+            // Optional: Log the exact IP that failed the CSRF check
+            error_log("CSRF validation failed. IP: " . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
+            
+            // Throw the 403 Forbidden Error and kill the script entirely
+            http_response_code(403);
+            die("403 Forbidden: Security token validation failed. Please refresh the page and try again.");
+        }
+    }
 }
 ?>

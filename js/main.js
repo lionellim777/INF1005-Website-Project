@@ -316,54 +316,6 @@ function initProductFilter() {
 }
 
 /* ──────────────────────────────────────────────────────────── */
-/*  CART CONTROLS                                               */
-/* ──────────────────────────────────────────────────────────── */
-function initCartControls() {
-    document.querySelectorAll('.qty-btn').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const action    = this.dataset.action;
-            const productId = this.dataset.id;
-            const qtyEl     = document.getElementById(`qty-${productId}`);
-            if (!qtyEl) return;
-
-            const current = parseInt(qtyEl.textContent);
-            let  newQty   = action === 'inc' ? current + 1 : current - 1;
-            if (newQty < 0) newQty = 0;
-
-            try {
-                const res  = await fetch('cart_update.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ product_id: productId, quantity: newQty })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    if (newQty === 0) {
-                        document.getElementById(`cart-row-${productId}`)?.remove();
-                    } else {
-                        qtyEl.textContent = newQty;
-                    }
-                    updateCartTotal(data.total);
-                    updateCartBadge(data.count);
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        });
-    });
-}
-
-function updateCartTotal(total) {
-    const el = document.getElementById('cart-total');
-    if (el && total !== undefined) el.textContent = '$' + parseFloat(total).toFixed(2);
-}
-
-function updateCartBadge(count) {
-    const badge = document.querySelector('.badge-dot');
-    if (badge) badge.textContent = count || '';
-}
-
-/* ──────────────────────────────────────────────────────────── */
 /*  TOAST NOTIFICATIONS                                         */
 /* ──────────────────────────────────────────────────────────── */
 function initToasts() {

@@ -50,7 +50,7 @@ if (empty($errorMsg)) {
             // Success! Set a flash message and redirect to login
             global $session; // Access the Zebra_Session object
             $session->set_flashdata('success_msg', 'Registration successful! Please log in.');
-            header("Location: /login.php");
+            header("Location: /account/login.php");
             exit;
         } else {
             $errorMsg = "A database error occurred. Please try again later.";

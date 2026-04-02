@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $oldPrice    = (float)($_POST['old_price'] ?? 0) ?: null;
         $category    = trim($_POST['category'] ?? '');
         $badge       = trim($_POST['badge'] ?? '') ?: null;
-        $stock       = (int)($_POST['stock_quantity'] ?? 0);
+        $stock       = (int)($_POST['stock'] ?? 0);
 
         // --- FILE UPLOAD LOGIC ---
         // 1. Handle Image Upload
@@ -61,12 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errorMsg = "Invalid input: Name must be >= 2 chars, Price > 0.";
         } elseif (!$errorMsg) {
             if ($action === 'add_product') {
-                $stmt = $db_conn->prepare("INSERT INTO products (name, description, price, old_price, image_url, category, badge, model, stock_quantity) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt = $db_conn->prepare("INSERT INTO products (name, description, price, old_price, image_url, category, badge, model, stock) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 $stmt->bind_param("ssddssssi", $name, $desc, $price, $oldPrice, $imageUrl, $category, $badge, $modelPath, $stock);
                 if ($stmt->execute()) $successMsg = "Product added successfully.";
                 else $errorMsg = "Failed to add product.";
             } else {
-                $stmt = $db_conn->prepare("UPDATE products SET name=?, description=?, price=?, old_price=?, image_url=?, category=?, badge=?, model=?, stock_quantity=? WHERE id=?");
+                $stmt = $db_conn->prepare("UPDATE products SET name=?, description=?, price=?, old_price=?, image_url=?, category=?, badge=?, model=?, stock=? WHERE id=?");
                 $stmt->bind_param("ssddssssii", $name, $desc, $price, $oldPrice, $imageUrl, $category, $badge, $modelPath, $stock, $id);
                 if ($stmt->execute()) $successMsg = "Product updated successfully.";
                 else $errorMsg = "Failed to update product.";
@@ -155,7 +155,7 @@ $currentPage = 'products';
                                     <td>
                                         <div class="fw-semibold text-white">$<?= number_format((float)$p['price'], 2) ?></div>
                                     </td>
-                                    <td><span class="badge bg-secondary"><?= (int)$p['stock_quantity'] ?> in stock</span></td>
+                                    <td><span class="badge bg-secondary"><?= (int)$p['stock'] ?> in stock</span></td>
                                     <td>
                                         <?php if (!empty($p['model'])): ?>
                                             <span class="badge bg-info text-dark"><i class="bi bi-box"></i> Included</span>
@@ -168,6 +168,7 @@ $currentPage = 'products';
                                             <i class="bi bi-pencil"></i> Edit
                                         </button>
                                         <form method="POST" action="" class="d-inline" onsubmit="return confirm('Delete <?= htmlspecialchars($p['name'], ENT_QUOTES) ?>?');">
+                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">    
                                             <input type="hidden" name="action" value="delete_product">
                                             <input type="hidden" name="product_id" value="<?= (int)$p['id'] ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
@@ -191,6 +192,7 @@ $currentPage = 'products';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                 <input type="hidden" name="action" id="modalAction" value="add_product">
                 <input type="hidden" name="product_id" id="modalProductId" value="">
                 
@@ -214,7 +216,7 @@ $currentPage = 'products';
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-white-50 small">Stock Quantity *</label>
-                            <input type="number" class="form-control bg-dark text-white border-secondary" name="stock_quantity" id="modalStock" required value="0">
+                            <input type="number" class="form-control bg-dark text-white border-secondary" name="stock" id="modalStock" required value="0">
                         </div>
                         <div class="col-12">
                             <label class="form-label text-white-50 small">Description</label>
@@ -280,7 +282,7 @@ $currentPage = 'products';
         document.getElementById('modalCategory').value = product.category;
         document.getElementById('modalPrice').value = product.price;
         document.getElementById('modalOldPrice').value = product.old_price || '';
-        document.getElementById('modalStock').value = product.stock_quantity;
+        document.getElementById('modalStock').value = product.stock;
         document.getElementById('modalDesc').value = product.description;
         document.getElementById('modalBadge').value = product.badge || '';
         

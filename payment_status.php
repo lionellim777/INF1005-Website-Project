@@ -10,13 +10,13 @@ include __DIR__ . '/inc/page-top.inc.php';
 ?>
 
     <div class="container animated py-5 text-center">
+        <script>
+                localStorage.removeItem('cart');
+        </script>
         <?php if ($status === 'completed'): ?>
             <h4 class="fw-bold mt-3">Payment Successful!</h4>
             <p class="text-muted">Thanks for your order. Reference: <strong><?= htmlspecialchars($reference) ?></strong></p>
             <a href="/shop/catalog.php" class="btn btn-dark mt-2">Continue Shopping</a>
-            <script>
-                localStorage.removeItem('cart');
-            </script>
         <?php else: ?>
             <h4 class="fw-bold mt-3">Payment Failed</h4>
             <p class="text-muted">Something went wrong. Please try again.</p>

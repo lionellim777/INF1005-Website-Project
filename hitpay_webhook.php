@@ -58,14 +58,24 @@ error_log("HitPay Webhook: event=$event, reference=$reference, status=$status, e
 
 // 6. Update order status in your database
 if ($reference) {
-    $refEsc = $db_conn->real_escape_string($reference);
-    if ($event === 'payment_request.completed' && $status === 'completed') {
-        // Update order to 'paid'
-        $db_conn->query("UPDATE orders SET payment_status='completed' WHERE reference='$refEsc'");
-    } elseif ($event === 'payment_request.failed' || $status === 'failed') {
-        // Update order to 'failed' and store error
-        $errorEsc = $db_conn->real_escape_string($error);
-        $db_conn->query("UPDATE orders SET payment_status='failed', failure_reason='$errorEsc' WHERE reference='$refEsc'");
+    // Strip the 'ORD-' prefix to get the actual database ID
+    $orderId = (int) str_replace('ORD-', '', $reference);
+    
+    if ($orderId > 0) {
+        if ($event === 'payment_request.completed' && $status === 'completed') {
+            // Update the main status to 'processing' so it shows up on the Admin Dashboard!
+            $stmt = $db_conn->prepare("UPDATE orders SET status='processing' WHERE id=?");
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+        } elseif ($event === 'payment_request.failed' || $status === 'failed') {
+            // Mark as cancelled or failed
+            $stmt = $db_conn->prepare("UPDATE orders SET status='cancelled' WHERE id=?");
+            $stmt->bind_param("i", $orderId);
+            $stmt->execute();
+            
+            // Optional: You can log the $error to a text file here if you want to track failures
+            error_log("Order $orderId failed: $error");
+        }
     }
 }
 

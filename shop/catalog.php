@@ -13,7 +13,7 @@ $all_reviews = [];
 // 2. Fetch Products from MySQL
 if (isset($db_conn)) {
     // Note: We select `desc` specifically since it's a reserved keyword
-    $prod_result = $db_conn->query("SELECT id, name, `desc`, price, old_price, image_url, category, badge, model FROM products");
+    $prod_result = $db_conn->query("SELECT id, name, `description`, price, old_price, image_url, category, badge, model FROM products");
     if ($prod_result) {
         while ($row = $prod_result->fetch_assoc()) {
             $all_products[] = $row;
