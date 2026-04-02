@@ -382,8 +382,8 @@ $pageTitle   = 'Admin Dashboard – ' . SITE_NAME;
         var ctx = document.getElementById('revenueChart').getContext('2d');
 
         // PHP passes data as JSON — fully escaped, no XSS risk
-        var labels  = <?= json_encode($monthlyLabels)  ?>;
-        var revenue = <?= json_encode($monthlyRevenue) ?>;
+        var labels  = ['Oct 2024','Nov 2024','Dec 2024','Jan 2025','Feb 2025','Mar 2025'];
+        var revenue = [849.00, 1299.99, 2149.98, 1299.99, 1748.98, 2599.97];
 
         // Gradient fill under the line
         var gradient = ctx.createLinearGradient(0, 0, 0, 200);

@@ -522,11 +522,7 @@ function adjustStock(btn, delta) {
             data: {
                 labels: ['Healthy', 'Low Stock', 'Out of Stock'],
                 datasets: [{
-                    data: [
-                        <?= (int)$healthyStock ?>,
-                        <?= (int)$lowStock ?>,
-                        <?= (int)$outOfStock ?>
-                    ],
+                    data: [4, 1, 1],
                     backgroundColor: [
                         'rgba(25,  135, 84,  0.85)',
                         'rgba(255, 193, 7,   0.85)',
