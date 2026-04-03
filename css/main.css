@@ -2,6 +2,45 @@
 .navbar-nav .nav-link.active { font-weight: 700 !important; color: #fff !important; }
 footer { background-color: #285f6b !important; }
 
+.nav-cart-btn {
+    transition: transform 0.2s ease, color 0.2s ease;
+    display: inline-block;
+}
+
+.nav-cart-btn:hover {
+    transform: scale(1.05) translateY(-2px);
+}
+
+.nav-login-btn {
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block;
+}
+
+.nav-login-btn:hover {
+    color: #ffffff !important;
+}
+
+.nav-signup-btn {
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease !important;
+}
+
+.nav-signup-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(39, 80, 87, 0.8);
+}
+
+footer .text-white-50,
+footer .text-white-50.small,
+footer a.text-white-50 {
+    color: #e9ecef !important;
+}
+
+footer a.text-white-50:hover,
+footer a.text-white-50:focus {
+    color: #ffffff !important;
+    text-decoration: underline;
+}
+
 .carousel-item img {
     height: 90vh; width: 100%; object-fit: cover;
     object-position: center; filter: brightness(0.45);

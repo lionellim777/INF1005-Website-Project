@@ -84,7 +84,8 @@ $total = count($products);
             </div>
 
             <div class="ms-auto">
-                <select id="sortSelect" class="form-select form-select-sm">
+                <label for="sortSelect" class="visually-hidden">Sort products</label>
+                <select id="sortSelect" class="form-select form-select-sm" aria-label="Sort products">
                     <option value="default">Sort: Default</option>
                     <option value="ascending">Price: Low → High</option>
                     <option value="descending">Price: High → Low</option>

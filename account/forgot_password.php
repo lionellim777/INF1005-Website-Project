@@ -100,8 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <form method="POST" action="">
                     <div class="mb-4">
-                        <label class="form-label fw-semibold" style="color: var(--text-secondary);">Email Address</label>
-                        <input type="email" name="email" class="form-control form-control-dark" required placeholder="name@example.com">
+                        <label for="forgot-password-email" class="form-label fw-semibold" style="color: var(--text-secondary);">Email Address</label>
+                        <input type="email" name="email" id="forgot-password-email" class="form-control form-control-dark" required placeholder="name@example.com">
                     </div>
                     <button type="submit" class="btn w-100 text-white fw-bold py-2 mb-3" style="background-color: var(--brand-primary); border-radius: 8px;">
                         Send Reset Link

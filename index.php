@@ -20,7 +20,7 @@ $pageTitle = 'Pomegranate | Home';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php h($pageTitle) ?></title>
+    <title><?= h($pageTitle) ?></title>
     <link rel="preload" href="<?= h(app_url('assets/phone.jpg')) ?>" as="image" fetchpriority="high">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -78,7 +78,7 @@ $pageTitle = 'Pomegranate | Home';
                         <div class="card w-100 shadow-sm">
                             <img src="<?= h($product['image_url']) ?>" class="card-img-top" alt="<?= h($product['name']) ?>" style="object-fit: cover; height: 200px;" loading="lazy">
                             <div class="card-body text-center d-flex flex-column">
-                                <h3 class="card-title fw-bold h5"><?= h($product['name']) ?></h3>
+                                <h2 class="card-title fw-bold h5"><?= h($product['name']) ?></h2>
                                 <p class="card-text text-truncate"><?= h($product['description']) ?></p>
                                 <div class="text-success mb-3 fw-semibold">$<?= number_format($product['price'], 2) ?></div>
                                 <button class="btn btn-outline-dark mt-auto" onclick="window.location.href='/shop/catalog.php'">View in Catalog</button>

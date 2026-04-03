@@ -97,20 +97,20 @@ unset($_SESSION['success_msg']);
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
 
                 <div class="col-sm-6">
-                    <label class="form-label text-muted small fw-bold" style="letter-spacing:.05em;">FIRST NAME</label>
-                    <input type="text" name="fname" class="form-control-light w-100" placeholder="John" required>
+                    <label for="signup-first-name" class="form-label text-muted small fw-bold" style="letter-spacing:.05em;">FIRST NAME</label>
+                    <input type="text" name="fname" id="signup-first-name" class="form-control-light w-100" placeholder="John" required>
                 </div>
                 
                 <div class="col-sm-6">
-                    <label class="form-label text-muted small fw-bold" style="letter-spacing:.05em;">LAST NAME</label>
-                    <input type="text" name="lname" class="form-control-light w-100" placeholder="Doe" required>
+                    <label for="signup-last-name" class="form-label text-muted small fw-bold" style="letter-spacing:.05em;">LAST NAME</label>
+                    <input type="text" name="lname" id="signup-last-name" class="form-control-light w-100" placeholder="Doe" required>
                 </div>
 
                 <div class="col-12 mt-3">
-                    <label class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">EMAIL ADDRESS</label>
+                    <label for="signup-email" class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">EMAIL ADDRESS</label>
                     <div class="search-bar-wrap position-relative d-flex align-items-center">
                         <i class="bi bi-envelope position-absolute ms-3"></i>
-                        <input type="email" name="email" class="form-control-light w-100 ps-5" placeholder="name@example.com" required>
+                        <input type="email" name="email" id="signup-email" class="form-control-light w-100 ps-5" placeholder="name@example.com" required>
                     </div>
                 </div>
 
@@ -130,10 +130,10 @@ unset($_SESSION['success_msg']);
                 </div>
 
                 <div class="col-12 mt-3">
-                    <label class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">CONFIRM PASSWORD</label>
+                    <label for="signup-password-confirm" class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">CONFIRM PASSWORD</label>
                     <div class="search-bar-wrap position-relative d-flex align-items-center">
                         <i class="bi bi-shield-lock position-absolute ms-3"></i>
-                        <input type="password" name="pwd_confirm" class="form-control-light w-100 ps-5" placeholder="Repeat password" required>
+                        <input type="password" name="pwd_confirm" id="signup-password-confirm" class="form-control-light w-100 ps-5" placeholder="Repeat password" required>
                     </div>
                 </div>
 

@@ -9,33 +9,6 @@ $role = strtolower($_SESSION['role'] ?? 'user');
 $initials = strtoupper(substr($fname, 0, 1) . substr($lname, 0, 1));
 if (empty(trim($initials))) $initials = 'U';
 ?>
-<style>
-    /* ── Navbar Action Button Animations ── */
-    .nav-cart-btn {
-        transition: transform 0.2s ease, color 0.2s ease;
-        display: inline-block;
-    }
-    .nav-cart-btn:hover {
-        transform: scale(1.05) translateY(-2px);
-    }
-
-    .nav-login-btn {
-        transition: color 0.2s ease, transform 0.2s ease;
-        display: inline-block;
-    }
-    .nav-login-btn:hover {
-        color: #ffffff !important;
-    }
-
-    .nav-signup-btn {
-        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease !important;
-    }
-    .nav-signup-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(39, 80, 87, 0.8);
-    }
-</style>
-
 <nav class="navbar navbar-expand-lg sticky-top navbar-dark">
     <div class="container">
         <a href="/index.php" class="navbar-brand d-flex align-items-center gap-2">
@@ -73,9 +46,9 @@ if (empty(trim($initials))) $initials = 'U';
                             <li><span class="dropdown-item-text small text-muted">Signed in as <strong><?= h($email) ?></strong></span></li>
                             <li><span class="dropdown-item-text text-muted small text-uppercase fw-bold">Role: <?= h(ucfirst($role)) ?></span></li>
                             <li><hr class="dropdown-divider"></li>
-                            
+
                             <li><a class="dropdown-item" href="/account/profile.php"><i class="bi bi-person me-2"></i> My Profile</a></li>
-                            
+
                             <?php if ($role === 'admin'): ?>
                                 <li><a class="dropdown-item text-danger" href="/admin/index.php"><i class="bi bi-shield-lock me-2"></i> Admin Panel</a></li>
                             <?php elseif ($role === 'employee'): ?>
@@ -83,7 +56,7 @@ if (empty(trim($initials))) $initials = 'U';
                             <?php else: ?>
                                 <li><a class="dropdown-item text-secondary" href="/account/profile.php?tab=orders"><i class="bi bi-receipt me-2"></i> My Orders</a></li>
                             <?php endif; ?>
-                            
+
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="/account/logout.php"><i class="bi bi-box-arrow-right me-2"></i> Log out</a></li>
                         </ul>

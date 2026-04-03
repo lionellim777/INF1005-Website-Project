@@ -25,9 +25,9 @@ It covers:
 - Overview, Products, Inventory, Orders, and Users page access
 - product add, edit, stock update, and delete using a disposable product
 - user role update, deactivate, activate, and delete using a disposable test user
-- optional order status advance and optional order cancellation when you explicitly provide target order IDs
+- order status advance and order cancellation using disposable test orders by default
 
-The order actions are intentionally opt-in because they change real order records.
+The admin flow now avoids mutating real customer orders by creating disposable users and orders for the order-management checks.
 
 ### Admin setup
 
@@ -37,16 +37,18 @@ The order actions are intentionally opt-in because they change real order record
    - `ADMIN_ORDER_PROCESS_ID`
    - `ADMIN_ORDER_CANCEL_ID`
 
+The order ID variables are legacy overrides. If you leave them empty, `audit:admin` creates disposable orders automatically.
+
 Run the admin flow from `testing`:
 
 ```powershell
-npm run audit:admin
+npm.cmd run audit:admin
 ```
 
 If you want to watch it in a visible browser:
 
 ```powershell
-npm run audit:admin -- --headed
+npm.cmd run audit:admin -- --headed
 ```
 
 ## Install
@@ -76,30 +78,30 @@ Edit `config/site.json` to change:
 From `testing`:
 
 ```powershell
-npm run audit:site
+npm.cmd run audit:site
 ```
 
 Override the URL for one run:
 
 ```powershell
-npm run audit:site -- --url=https://example.com
+npm.cmd run audit:site -- --url=https://example.com
 ```
 
 Individual checks:
 
 ```powershell
-npm run audit:a11y
-npm run audit:headers
-npm run audit:lighthouse
-npm run audit:links
-npm run audit:markup
+npm.cmd run audit:a11y
+npm.cmd run audit:headers
+npm.cmd run audit:lighthouse
+npm.cmd run audit:links
+npm.cmd run audit:markup
 ```
 
 What each command does:
 
 - `audit:site`: runs the full workflow and writes one combined summary.
 - `audit:a11y`: runs only accessibility checks with `Pa11y`.
-- `audit:admin`: runs the authenticated admin browser flow with Playwright.
+- `audit:admin`: runs the authenticated admin browser flow with Playwright, including disposable users, products, and orders for mutation tests.
 - `audit:headers`: runs only the security-header check.
 - `audit:lighthouse`: runs only Lighthouse on the configured `lighthousePaths`.
 - `audit:links`: runs only recursive link checking.
@@ -108,8 +110,8 @@ What each command does:
 Playwright helpers:
 
 ```powershell
-npm run playwright:open -- https://example.com
-npm run playwright:codegen -- https://example.com
+npm.cmd run playwright:open -- https://example.com
+npm.cmd run playwright:codegen -- https://example.com
 ```
 
 ## Output
@@ -117,7 +119,7 @@ npm run playwright:codegen -- https://example.com
 Each run writes files into `reports/latest/`, including:
 
 - `summary.json`: top-level summary of the run and headline results
-- `admin-flow.json`: step-by-step result log for the authenticated admin workflow
+- `admin-flow.json`: step-by-step result log for the authenticated admin workflow, including failure classification such as page-access, application, or test-setup issues
 - `pages.json`: the final list of pages checked after combining configured paths and crawled pages
 - `a11y.json`: detailed accessibility issues from `Pa11y`
 - `headers.json`: values for the checked security headers

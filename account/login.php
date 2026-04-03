@@ -104,22 +104,22 @@ unset($_SESSION['success_msg']);
                 <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
 
                 <div class="mb-4">
-                    <label class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.08em;">EMAIL ADDRESS</label>
+                    <label for="login-email" class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.08em;">EMAIL ADDRESS</label>
                     <div class="search-bar-wrap position-relative d-flex align-items-center">
                         <i class="bi bi-envelope position-absolute ms-3"></i>
-                        <input type="email" name="email" class="form-control-light w-100 py-2 ps-5 pe-3" placeholder="name@example.com" required>
+                        <input type="email" name="email" id="login-email" class="form-control-light w-100 py-2 ps-5 pe-3" placeholder="name@example.com" required>
                     </div>
                 </div>
 
                 <div class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label text-muted small fw-bold mb-0" style="letter-spacing:.08em;">PASSWORD</label>
+                        <label for="password" class="form-label text-muted small fw-bold mb-0" style="letter-spacing:.08em;">PASSWORD</label>
                         <a href="<?= app_url('account/forgot_password.php') ?>" class="text-brand small text-decoration-none fw-semibold">Forgot?</a>
                     </div>
                     <div class="search-bar-wrap position-relative d-flex align-items-center">
                         <i class="bi bi-lock position-absolute ms-3"></i>
                         <input type="password" name="pwd" id="password" class="form-control-light w-100 py-2 ps-5 pe-5" placeholder="••••••••" required>
-                        <button type="button" class="btn btn-link text-muted position-absolute end-0 text-decoration-none px-3" onclick="togglePassword()">
+                        <button type="button" class="btn btn-link text-muted position-absolute end-0 text-decoration-none px-3" onclick="togglePassword()" aria-label="Toggle password visibility">
                             <i class="bi bi-eye" id="pwd-eye"></i>
                         </button>
                     </div>
