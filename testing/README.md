@@ -15,6 +15,40 @@ This workspace uses a small set of website testing tools, each covering a differ
 
 Some tools are installed locally in this `testing` workspace through `npm`, while `vnu` uses the system-level validator command already set up on this machine.
 
+## Admin Flow
+
+An admin browser automation flow is available for authenticated dashboard testing.
+
+It covers:
+
+- admin login
+- Overview, Products, Inventory, Orders, and Users page access
+- product add, edit, stock update, and delete using a disposable product
+- user role update, deactivate, activate, and delete using a disposable test user
+- optional order status advance and optional order cancellation when you explicitly provide target order IDs
+
+The order actions are intentionally opt-in because they change real order records.
+
+### Admin setup
+
+1. Copy `.env.example` to `.env`
+2. Fill in `ADMIN_EMAIL` and `ADMIN_PASSWORD`
+3. Optionally set:
+   - `ADMIN_ORDER_PROCESS_ID`
+   - `ADMIN_ORDER_CANCEL_ID`
+
+Run the admin flow from `testing`:
+
+```powershell
+npm run audit:admin
+```
+
+If you want to watch it in a visible browser:
+
+```powershell
+npm run audit:admin -- --headed
+```
+
 ## Install
 
 ```powershell
@@ -65,6 +99,7 @@ What each command does:
 
 - `audit:site`: runs the full workflow and writes one combined summary.
 - `audit:a11y`: runs only accessibility checks with `Pa11y`.
+- `audit:admin`: runs the authenticated admin browser flow with Playwright.
 - `audit:headers`: runs only the security-header check.
 - `audit:lighthouse`: runs only Lighthouse on the configured `lighthousePaths`.
 - `audit:links`: runs only recursive link checking.
@@ -82,6 +117,7 @@ npm run playwright:codegen -- https://example.com
 Each run writes files into `reports/latest/`, including:
 
 - `summary.json`: top-level summary of the run and headline results
+- `admin-flow.json`: step-by-step result log for the authenticated admin workflow
 - `pages.json`: the final list of pages checked after combining configured paths and crawled pages
 - `a11y.json`: detailed accessibility issues from `Pa11y`
 - `headers.json`: values for the checked security headers

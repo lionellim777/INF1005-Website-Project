@@ -5,6 +5,7 @@
   "scripts": {
     "audit:site": "node scripts/audit-site.mjs --mode=all",
     "audit:a11y": "node scripts/audit-site.mjs --mode=a11y",
+    "audit:admin": "node scripts/admin-flow.mjs",
     "audit:headers": "node scripts/audit-site.mjs --mode=headers",
     "audit:lighthouse": "node scripts/audit-site.mjs --mode=lighthouse",
     "audit:links": "node scripts/audit-site.mjs --mode=links",
@@ -15,6 +16,7 @@
   "devDependencies": {
     "broken-link-checker": "^0.7.8",
     "cheerio": "^1.1.2",
+    "dotenv": "^17.2.3",
     "lighthouse": "^13.0.1",
     "pa11y": "^9.1.1",
     "playwright": "^1.59.1"
