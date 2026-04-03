@@ -2,9 +2,6 @@
 require_once dirname(__DIR__). '/inc/bootstrap.php';
 require_once dirname(__DIR__). '/inc/auth_middleware.php';
 
-// Force login to checkout
-require_login();
-
 $amount = $_POST['amount'] ?? 0;
 
 if(!$amount || empty($_SESSION['cart'])){ 

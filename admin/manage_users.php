@@ -1,339 +1,333 @@
 <?php
 /**
  * Admin – User Management Panel
- * - Staff table: always shows admins & employees
- * - User search: search by name/email, edit from results
- * Accessible only to admin.
+ * View, search, edit roles, activate/deactivate, and delete users.
+ * Accessible only to users with role 'admin'.
  */
-require_once dirname(__DIR__) . '/inc/bootstrap.php';
-require_once dirname(__DIR__) . '/inc/auth_middleware.php';
 
+require_once __DIR__ . '/../inc/bootstrap.php';
+require_once __DIR__ . '/../inc/auth_middleware.php';
+
+// Enforce admin access (require_role already calls require_login)
 require_role(['admin']);
 
-$currentSessionUser = [
-    'user_id' => $_SESSION['user_id'] ?? 0,
-    'fname'   => $_SESSION['fname']   ?? 'Admin',
-    'lname'   => $_SESSION['lname']   ?? '',
-    'email'   => $_SESSION['email']   ?? '',
-    'role'    => $_SESSION['role']    ?? 'admin',
-];
+function setAdminFlash(string $type, string $message): void {
+    $_SESSION['admin_flash'] = ['type' => $type, 'message' => $message];
+}
 
-$successMsg = '';
-$errorMsg   = '';
-
-// ---------------------------------------------------------------------------
-// POST: CHANGE ROLE
-// ---------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'change_role') {
-    $targetId = (int)($_POST['target_user_id'] ?? 0);
-    $newRole  = strtolower(trim($_POST['new_role'] ?? ''));
-
-    if ($targetId === (int)$currentSessionUser['user_id']) {
-        $errorMsg = 'You cannot change your own role.';
-    } elseif (!in_array($newRole, ['user', 'employee', 'admin'])) {
-        $errorMsg = 'Invalid role selected.';
-    } else {
-        $stmt = $db_conn->prepare('UPDATE users SET role = ? WHERE id = ?');
-        $stmt->bind_param("si", $newRole, $targetId);
-        $successMsg = $stmt->execute() ? 'Role updated successfully.' : 'Failed to update role.';
-        if (!$stmt->execute()) $errorMsg = 'Failed to update role.';
-    }
+function getAdminFlash(): ?array {
+    $flash = $_SESSION['admin_flash'] ?? null;
+    unset($_SESSION['admin_flash']);
+    return $flash;
 }
 
 // ---------------------------------------------------------------------------
-// POST: DELETE USER
+// Database connection (global MySQLi object from bootstrap)
 // ---------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete_user') {
-    $targetId = (int)($_POST['target_user_id'] ?? 0);
+global $db_conn;
+if (!$db_conn || $db_conn->connect_error) {
+    die('Database connection failed.');
+}
 
-    if ($targetId === (int)$currentSessionUser['user_id']) {
-        $errorMsg = 'You cannot delete your own account.';
-    } else {
-        $stmt = $db_conn->prepare('DELETE FROM users WHERE id = ?');
-        $stmt->bind_param("i", $targetId);
-        if ($stmt->execute()) {
-            $successMsg = 'User deleted permanently.';
+// Current admin user info
+$currentUserId = (int)($_SESSION['user_id'] ?? 0);
+$currentUserRole = $_SESSION['role'] ?? '';
+
+// ---------------------------------------------------------------------------
+// Handle POST actions: change_role, toggle_active, delete_user
+// ---------------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validate_csrf();  // from auth_middleware
+
+    $action = $_POST['action'] ?? '';
+
+    // -----------------------------------------------------------------------
+    // Change user role
+    // -----------------------------------------------------------------------
+    if ($action === 'change_role') {
+        $targetId = (int)($_POST['target_user_id'] ?? 0);
+        $newRole  = $_POST['new_role'] ?? '';
+
+        // Validate new role
+        $allowedRoles = ['customer', 'admin', 'employee'];
+        if (!in_array($newRole, $allowedRoles, true)) {
+            setAdminFlash('error', 'Invalid role selected.');
+        } elseif ($targetId === $currentUserId) {
+            setAdminFlash('error', 'You cannot change your own role.');
         } else {
-            $errorMsg = 'Failed to delete user. They may have active orders linked to them.';
+            $stmt = $db_conn->prepare('UPDATE users SET role = ? WHERE id = ?');
+            $stmt->bind_param('si', $newRole, $targetId);
+            if ($stmt->execute()) {
+                setAdminFlash('success', 'User role updated.');
+                // Regenerate CSRF token after successful action
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            } else {
+                setAdminFlash('error', 'Database error: ' . $db_conn->error);
+            }
+            $stmt->close();
         }
+        header('Location: ' . app_url('/admin/manage_users.php'));
+        exit;
+    }
+
+    // -----------------------------------------------------------------------
+    // Toggle user active/inactive
+    // -----------------------------------------------------------------------
+    if ($action === 'toggle_active') {
+        $targetId = (int)($_POST['target_user_id'] ?? 0);
+
+        if ($targetId === $currentUserId) {
+            setAdminFlash('error', 'You cannot deactivate your own account.');
+        } else {
+            // Toggle is_active (0/1)
+            $stmt = $db_conn->prepare('UPDATE users SET is_active = NOT is_active WHERE id = ?');
+            $stmt->bind_param('i', $targetId);
+            if ($stmt->execute()) {
+                setAdminFlash('success', 'Account status updated.');
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            } else {
+                setAdminFlash('error', 'Database error: ' . $db_conn->error);
+            }
+            $stmt->close();
+        }
+        header('Location: ' . app_url('/admin/manage_users.php'));
+        exit;
+    }
+
+    // -----------------------------------------------------------------------
+    // Delete user (new feature)
+    // -----------------------------------------------------------------------
+    if ($action === 'delete_user') {
+        $targetId = (int)($_POST['target_user_id'] ?? 0);
+
+        if ($targetId === $currentUserId) {
+            setAdminFlash('error', 'You cannot delete your own account.');
+        } else {
+            // Optional: check if user has orders? For now, cascade delete is set in DB (orders.user_id FK ON DELETE CASCADE)
+            $stmt = $db_conn->prepare('DELETE FROM users WHERE id = ?');
+            $stmt->bind_param('i', $targetId);
+            if ($stmt->execute()) {
+                setAdminFlash('success', 'User permanently deleted.');
+                $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+            } else {
+                setAdminFlash('error', 'Delete failed: ' . $db_conn->error);
+            }
+            $stmt->close();
+        }
+        header('Location: ' . app_url('/admin/manage_users.php'));
+        exit;
     }
 }
 
 // ---------------------------------------------------------------------------
-// FETCH STAFF (admins + employees only)
+// Fetch users with search & role filters
 // ---------------------------------------------------------------------------
-$staffStmt = $db_conn->prepare("
-    SELECT id as user_id, fname as first_name, lname as last_name,
-           email, role as role_name, created_at, last_login, is_active
-    FROM users
-    WHERE role IN ('admin', 'employee')
-    ORDER BY role ASC, fname ASC
-");
-$staffStmt->execute();
-$staffUsers = $staffStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$search     = trim($_GET['search'] ?? '');
+$roleFilter = $_GET['role'] ?? '';
 
-// ---------------------------------------------------------------------------
-// FETCH USERS (search only)
-// ---------------------------------------------------------------------------
-$search      = trim($_GET['search'] ?? '');
-$searchResults = [];
+$sql = "SELECT id, fname, lname, email, role, is_active, created_at, last_login
+        FROM users WHERE 1=1";
+$params = [];
+$types = '';
 
 if ($search !== '') {
-    $like = "%{$search}%";
-    $searchStmt = $db_conn->prepare("
-        SELECT id as user_id, fname, lname, email, role as role_name, created_at, last_login, is_active
-        FROM users
-        WHERE role = 'customer'
-          AND (fname LIKE ? OR lname LIKE ? OR email LIKE ?)
-        ORDER BY fname ASC
-    ");
-    $searchStmt->bind_param("sss", $like, $like, $like);
-    $searchStmt->execute();
-    $searchResults = $searchStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $sql .= " AND (fname LIKE ? OR lname LIKE ? OR email LIKE ?)";
+    $like = '%' . $search . '%';
+    $params = array_merge($params, [$like, $like, $like]);
+    $types .= 'sss';
 }
+if ($roleFilter !== '' && in_array($roleFilter, ['customer', 'admin', 'employee'], true)) {
+    $sql .= " AND role = ?";
+    $params[] = $roleFilter;
+    $types .= 's';
+}
+$sql .= " ORDER BY created_at DESC";
 
-// ---------------------------------------------------------------------------
-// HELPERS
-// ---------------------------------------------------------------------------
-function roleBadgeClass(string $role): string {
-    return match (strtolower($role)) {
-        'admin'    => 'bg-danger',
-        'employee' => 'bg-info text-dark',
-        default    => 'bg-secondary',
-    };
+$stmt = $db_conn->prepare($sql);
+if ($params) {
+    $stmt->bind_param($types, ...$params);
 }
+$stmt->execute();
+$result = $stmt->get_result();
+$allUsers = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
-function isActive(array $u): bool {
-    return !isset($u['is_active']) || $u['is_active'] == 1;
-}
+// Role options for filter dropdown
+$roleOptions = [
+    'customer' => 'Customer',
+    'admin'    => 'Administrator',
+    'employee' => 'Employee'
+];
 
 $currentPage = 'users';
+$pageTitle   = 'Users – Pomegranate';
+$flash = getAdminFlash();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Users – Admin – Pomegranate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= h($pageTitle) ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= app_url('/css/main.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link rel="stylesheet" href="/css/admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= app_url('/admin/css/admin.css') ?>">
 </head>
-<body class="admin-body" style="background: var(--bg-primary);">
+<body class="admin-body">
+
 <div class="admin-layout">
     <?php include __DIR__ . '/inc/sidebar.php'; ?>
-    <div class="admin-content dash-main">
 
-        <div class="admin-topbar">
+    <div class="admin-content">
+        <div class="admin-topbar d-flex align-items-center justify-content-between px-4 py-3">
             <div>
-                <h4 class="page-title mb-0"><i class="bi bi-people me-2"></i>User Management</h4>
-                <small class="page-text">Manage staff roles and customer accounts</small>
+                <h4 class="fw-bold mb-0"><i class="bi bi-people me-2"></i>User Management</h4>
+                <small class="text-muted"><?= count($allUsers) ?> user(s) found</small>
             </div>
         </div>
 
-        <div class="dash-content">
-
-            <?php if ($successMsg): ?>
-                <div class="alert alert-success border-0 shadow-sm"><?= htmlspecialchars($successMsg) ?></div>
-            <?php endif; ?>
-            <?php if ($errorMsg): ?>
-                <div class="alert alert-danger border-0 shadow-sm"><?= htmlspecialchars($errorMsg) ?></div>
-            <?php endif; ?>
-
-            <!-- ============================================================
-                 SECTION 1: STAFF (Admins & Employees)
-            ============================================================ -->
-            <div class="dash-table-wrap shadow-sm mb-4">
-                <div class="dash-table-header">
-                    <h6 class="dash-table-title mb-0">
-                        <i class="bi bi-shield-lock me-2"></i>Staff — Admins & Employees (<?= count($staffUsers) ?>)
-                    </h6>
+        <div class="p-4">
+            <!-- Flash messages -->
+            <?php if ($flash): ?>
+                <div class="alert alert-<?= h($flash['type'] === 'success' ? 'success' : 'danger') ?> alert-dismissible fade show auto-dismiss" role="alert">
+                    <?= h($flash['message']) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <div class="table-responsive">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                                <th>Joined</th>
-                                <th>Last Login</th>
-                                <th class="text-end">Change Role</th>
-                                <th class="text-end pe-3">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($staffUsers as $u):
-                                $active = isActive($u);
-                            ?>
-                            <tr class="<?= !$active ? 'opacity-50' : '' ?>">
-                                <td>
-                                    <div class="fw-semibold text-white d-flex align-items-center gap-2">
-                                        <?= htmlspecialchars($u['fname'] . ' ' . $u['lname']) ?>
-                                        <?php if (!$active): ?>
-                                            <span class="badge bg-danger ms-1" style="font-size:0.6rem;">Inactive</span>
-                                        <?php endif; ?>
-                                        <?php if ($u['user_id'] == $currentSessionUser['user_id']): ?>
-                                            <span class="badge bg-secondary ms-1" style="font-size:0.6rem;">You</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="text-white small"><?= htmlspecialchars($u['email']) ?></div>
-                                </td>
-                                <td>
-                                    <span class="badge <?= roleBadgeClass($u['role_name']) ?>">
-                                        <?= ucfirst(htmlspecialchars($u['role_name'])) ?>
-                                    </span>
-                                </td>
-                                <td class="text-white small"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
-                                <td class="text-white small">
-                                    <?= $u['last_login'] ? date('d M Y, H:i', strtotime($u['last_login'])) : 'Never' ?>
-                                </td>
+            <?php endif; ?>
 
-                                <!-- Change Role -->
-                                <td class="text-end">
-                                    <?php if ($u['user_id'] != $currentSessionUser['user_id']): ?>
-                                        <form method="POST" class="d-flex justify-content-end gap-2">
-                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                            <input type="hidden" name="action" value="change_role">
-                                            <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <select name="new_role" class="form-select form-select-sm w-auto bg-dark text-white border-secondary">
-                                                <option value="user"     <?= $u['role_name'] === 'user'     ? 'selected' : '' ?>>User</option>
-                                                <option value="employee" <?= $u['role_name'] === 'employee' ? 'selected' : '' ?>>Employee</option>
-                                                <option value="admin"    <?= $u['role_name'] === 'admin'    ? 'selected' : '' ?>>Admin</option>
-                                            </select>
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="text-white small">—</span>
-                                    <?php endif; ?>
-                                </td>
-
-                                <!-- Delete Staff -->
-                                <td class="text-end pe-3">
-                                    <?php if ($u['user_id'] != $currentSessionUser['user_id']): ?>
-                                        <form method="POST" onsubmit="return confirm('Are you sure? This will permanently remove this user.');">
-                                            <input type="hidden" name="action" value="delete_user">
-                                            <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash me-1"></i>Delete
-                                            </button>
-                                        </form>
-                                    <?php else: ?>
-                                        <span class="text-white small">—</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+            <!-- Search & Filter -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3 align-items-end">
+                        <div class="col-md-6">
+                            <label for="search" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search" name="search"
+                                   placeholder="Name or email..."
+                                   value="<?= h($search) ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" name="role">
+                                <option value="">All Roles</option>
+                                <?php foreach ($roleOptions as $val => $label): ?>
+                                    <option value="<?= h($val) ?>" <?= $roleFilter === $val ? 'selected' : '' ?>>
+                                        <?= h($label) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn text-white flex-grow-1" style="background-color:#28666e;">
+                                <i class="bi bi-search me-1"></i>Filter
+                            </button>
+                            <?php if ($search || $roleFilter): ?>
+                                <a href="<?= app_url('/admin/manage_users.php') ?>" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-lg"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <!-- ============================================================
-                 SECTION 2: CUSTOMER SEARCH
-            ============================================================ -->
-            <div class="dash-table-wrap shadow-sm">
-                <div class="dash-table-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <h6 class="dash-table-title mb-0">
-                        <i class="bi bi-person-circle me-2"></i>Customer Accounts
-                    </h6>
-                    <form method="GET" action="" class="d-flex gap-2">
-                        <input type="text" name="search"
-                               class="form-control form-control-sm bg-dark text-white border-secondary"
-                               placeholder="Search by name or email…"
-                               value="<?= htmlspecialchars($search) ?>"
-                               style="min-width: 240px;">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-search"></i> Search
-                        </button>
-                        <?php if ($search): ?>
-                            <a href="/admin/manage_users.php" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-x"></i> Clear
-                            </a>
-                        <?php endif; ?>
-                    </form>
-                </div>
-
-                <?php if ($search === ''): ?>
-                    <div class="text-center py-5 text-white">
-                        <i class="bi bi-search" style="font-size: 2rem; opacity: 0.3;"></i>
-                        <p class="mt-2 mb-0" style="opacity: 0.5;">Search for a customer by name or email to manage their account.</p>
-                    </div>
-
-                <?php elseif (empty($searchResults)): ?>
-                    <div class="text-center py-5 text-white">
-                        <i class="bi bi-person-x" style="font-size: 2rem; opacity: 0.3;"></i>
-                        <p class="mt-2 mb-0" style="opacity: 0.5;">No customers found for "<?= htmlspecialchars($search) ?>".</p>
-                    </div>
-
-                <?php else: ?>
+            <!-- Users Table -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="dash-table">
-                            <thead>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
+                                    <th class="ps-3">ID</th>
                                     <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
                                     <th>Joined</th>
-                                    <th>Last Login</th>
-                                    <th class="text-end">Promote to Staff</th>
-                                    <th class="text-end pe-3">Status</th>
+                                    <th class="text-end pe-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($searchResults as $u):
-                                    $active = isActive($u);
-                                ?>
-                                <tr class="<?= !$active ? 'opacity-50' : '' ?>">
+                            <?php foreach ($allUsers as $u): ?>
+                                <tr class="<?= $u['is_active'] ? '' : 'table-secondary' ?>">
+                                    <td class="ps-3 text-muted small">#<?= (int)$u['id'] ?></td>
+                                    <td class="fw-semibold">
+                                        <?= h($u['fname'] . ' ' . $u['lname']) ?>
+                                    </td>
+                                    <td class="small"><?= h($u['email']) ?></td>
                                     <td>
-                                        <div class="fw-semibold text-white d-flex align-items-center gap-2">
-                                            <?= htmlspecialchars($u['first_name'] . ' ' . $u['last_name']) ?>
-                                            <?php if (!$active): ?>
-                                                <span class="badge bg-danger ms-1" style="font-size:0.6rem;">Inactive</span>
+                                        <form method="POST" action="" class="d-inline">
+                                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                            <input type="hidden" name="action" value="change_role">
+                                            <input type="hidden" name="target_user_id" value="<?= (int)$u['id'] ?>">
+                                            <select name="new_role"
+                                                    class="form-select form-select-sm d-inline-block w-auto"
+                                                    onchange="this.form.submit();"
+                                                    <?= ((int)$u['id'] === $currentUserId) ? 'disabled' : '' ?>>
+                                                <?php foreach ($roleOptions as $val => $label): ?>
+                                                    <option value="<?= h($val) ?>" <?= $u['role'] === $val ? 'selected' : '' ?>>
+                                                        <?= h($label) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <?php if ($u['is_active']): ?>
+                                            <span class="badge bg-success">Active</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="text-muted small">
+                                        <?= date('d M Y', strtotime($u['created_at'])) ?>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <?php if ((int)$u['id'] !== $currentUserId): ?>
+                                                <form method="POST" action="" class="d-inline">
+                                                    <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                                    <input type="hidden" name="action" value="toggle_active">
+                                                    <input type="hidden" name="target_user_id" value="<?= (int)$u['id'] ?>">
+                                                    <button type="submit"
+                                                            class="btn <?= $u['is_active'] ? 'btn-outline-warning' : 'btn-outline-success' ?> btn-sm"
+                                                            onclick="return confirm('<?= $u['is_active'] ? 'Deactivate' : 'Activate' ?> this account?');">
+                                                        <?= $u['is_active'] ? 'Deactivate' : 'Activate' ?>
+                                                    </button>
+                                                </form>
+                                                <form method="POST" action="" class="d-inline ms-1"
+                                                      onsubmit="return confirm('Permanently delete this user? This action cannot be undone.');">
+                                                    <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
+                                                    <input type="hidden" name="action" value="delete_user">
+                                                    <input type="hidden" name="target_user_id" value="<?= (int)$u['id'] ?>">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                        <i class="bi bi-trash3"></i> Delete
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="text-muted small">You</span>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="text-white small"><?= htmlspecialchars($u['email']) ?></div>
-                                    </td>
-                                    <td class="text-white small"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
-                                    <td class="text-white small">
-                                        <?= $u['last_login'] ? date('d M Y, H:i', strtotime($u['last_login'])) : 'Never' ?>
-                                    </td>
-
-                                    <!-- Promote to staff -->
-                                    <td class="text-end">
-                                        <form method="POST" class="d-flex justify-content-end gap-2">
-                                            <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
-                                            <input type="hidden" name="action" value="change_role">
-                                            <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <select name="new_role" class="form-select form-select-sm w-auto bg-dark text-white border-secondary">
-                                                <option value="user"     selected>User</option>
-                                                <option value="employee">Employee</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Update</button>
-                                        </form>
-                                    </td>
-
-                                    <!-- Delete Customer -->
-                                    <td class="text-end pe-3">
-                                        <form method="POST" onsubmit="return confirm('Are you sure? This will permanently remove this customer account.');">
-                                            <input type="hidden" name="action" value="delete_user">
-                                            <input type="hidden" name="target_user_id" value="<?= $u['user_id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                <i class="bi bi-trash me-1"></i>Delete
-                                            </button>
-                                        </form>
                                     </td>
                                 </tr>
-                                <?php endforeach; ?>
+                            <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
-                <?php endif; ?>
+                </div>
             </div>
-
-        </div><!-- /.dash-content -->
-    </div><!-- /.admin-content -->
-</div><!-- /.admin-layout -->
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Auto-dismiss flash messages after 5 seconds
+    document.querySelectorAll('.auto-dismiss').forEach(el => {
+        setTimeout(() => el.classList.add('fade', 'show'), 3000);
+        setTimeout(() => el.remove(), 5000);
+    });
+</script>
 </body>
 </html>

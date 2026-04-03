@@ -96,11 +96,14 @@ function csrf_token(): string
     return $_SESSION['csrf_token'];
 }
 
-function verify_csrf_token(?string $token): bool
-{
-    return is_string($token)
-        && isset($_SESSION['csrf_token'])
-        && hash_equals($_SESSION['csrf_token'], $token);
+function csrf_verify($provided_token) {
+    // If either token is missing, fail immediately
+    if (empty($_SESSION['csrf_token']) || empty($provided_token)) {
+        return false;
+    }
+    
+    // We use hash_equals instead of "==" to prevent timing attacks!
+    return hash_equals($_SESSION['csrf_token'], $provided_token);
 }
 
 function set_flash(string $key, string $message): void

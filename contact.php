@@ -18,7 +18,7 @@ $successMessage = get_flash('support_success');
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form_action'] ?? '') === 'contact_form') {
     $formData = sanitize_contact_payload($_POST);
 
-    if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
+    if (!csrf_verify($_POST['csrf_token'] ?? null)) {
         $errors['form'] = 'Your session expired. Please refresh the page and try again.';
     } elseif (support_honeypot_triggered($_POST)) {
         $errors['form'] = 'We could not process that submission. Please try again.';
@@ -47,6 +47,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['form_action'] ?? '') === '
 $pageTitle = 'Pomegranate | Contact';
 include __DIR__ . '/inc/page-top.inc.php';
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const charCountElements = document.querySelectorAll('[data-char-count]');
+    
+    charCountElements.forEach(function(el) {
+        const counterId = el.getAttribute('data-char-count');
+        const counterSpan = document.getElementById(counterId);
+        
+        if (!counterSpan) {
+            console.warn('Counter span not found for:', counterId);
+            return;
+        }
+        
+        function updateCount() {
+            const length = el.value.length;
+            const max = el.getAttribute('maxlength') || '?';
+            counterSpan.textContent = length + ' / ' + max;
+        }
+        
+        el.addEventListener('input', updateCount);
+        updateCount(); // set initial value
+    });
+});
+</script>
+
+<link rel="stylesheet" href="/css/form.css">
 
 <section id="contact-support" class="py-5">
     <div id="contact-container" class="container">

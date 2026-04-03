@@ -6,10 +6,6 @@ require_once __DIR__ . '/bootstrap.php';
  * Redirects to the login page if not authenticated.
  */
 function require_login() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        validate_csrf();
-    }
-    
     if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
         // Optional UX boost: Store where they were trying to go so the login page can redirect them back later
         $_SESSION['redirect_to'] = $_SERVER['REQUEST_URI'];

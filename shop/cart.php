@@ -36,9 +36,9 @@
                 <span id="cartTotal"></span>
             </div>
             <form id="checkoutForm" action="/shop/checkout.php" method="POST">
-                <input type="hidden" name="csrf_token" value="<?= csrf_token(); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo csrf_token(); ?>">
                 <input type="hidden" name="amount" id="checkOut" value="0">
-                <button type="submit" class="btn btn-dark w-100 mb-2">Checkout</button>
+                <button type="submit" class="btn btn-dark w-100 fw-bold">Checkout</button>
             </form>
         </div>
     </div>

@@ -66,7 +66,7 @@ include __DIR__ . '/inc/page-top.inc.php';
                             <img src="<?= h($product['image_url']) ?>" class="card-img-top" alt="<?= h($product['name']) ?>" style="object-fit: cover; height: 200px;">
                             <div class="card-body text-center d-flex flex-column">
                                 <h5 class="card-title fw-bold"><?= h($product['name']) ?></h5>
-                                <p class="card-text text-truncate"><?= h($product['desc']) ?></p>
+                                <p class="card-text text-truncate"><?= h($product['description']) ?></p>
                                 <h6 class="text-success mb-3">$<?= number_format($product['price'], 2) ?></h6>
                                 <button class="btn btn-outline-dark mt-auto" onclick="window.location.href='/shop/catalog.php'">View in Catalog</button>
                             </div>
@@ -80,51 +80,6 @@ include __DIR__ . '/inc/page-top.inc.php';
             <?php endif; ?>
         </div>
     </div>
-    
-    <section class="position-relative py-5">
-        <img id="contact-map" src="<?= h(app_url('assets/contact-map-2.png')) ?>" alt="contact-map" class="position-absolute top-0 start-0 w-100 h-100">
-        <div id="contact-container" class="container position-relative">
-            <div class="row justify-content-end">
-                <div class="col-md-6">
-                    <div class="bg-dark rounded p-4 shadow-lg text-white">
-                        <h4 class="fw-bold mb-3">Quick Connect</h4>
-                        <p class="text-white-50 small mb-4">Send us a message directly. We'll email you a confirmation.</p>
-                        
-                        <form action="contact.php" method="POST">
-                            <input type="hidden" name="form_action" value="contact_form">
-                            <input type="hidden" name="inquiry_type" value="Contact">
-                            <input type="hidden" name="csrf_token" value="<?= h(csrf_token()) ?>">
-                            
-                            <div class="support-honeypot" aria-hidden="true">
-                                <label for="website">Website</label>
-                                <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <input type="text" name="name" class="form-control-dark form-control" placeholder="Your name" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <input type="email" name="email" class="form-control-dark form-control" placeholder="Your email" required>
-                                </div>
-                                <div class="col-12">
-                                    <input type="text" name="subject" class="form-control-dark form-control" placeholder="Subject" required>
-                                </div>
-                                <div class="col-12">
-                                    <textarea name="message" class="form-control-dark form-control" placeholder="Your message" rows="4" required></textarea>
-                                </div>
-                                <div class="col-12 mt-4">
-                                    <button type="submit" class="btn-primary-glow btn btn-info w-100 d-flex justify-content-center align-items-center gap-2">
-                                        <i class="bi bi-send"></i> Send Message
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
 <?php
 
