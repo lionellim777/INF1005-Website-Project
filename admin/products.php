@@ -210,14 +210,26 @@ $editProduct = ($modalMode === 'edit' && $editId > 0) ? getProductById($editId) 
 
 // Helper: Flash render wrapper
 function renderFlash() {
-    global $session;
     $html = '';
-    if ($err = $_SESSION['error']) {
-        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($err).'</div>';
+    
+    // Check for error messages
+    if (!empty($_SESSION['error'])) {
+        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($_SESSION['error']).'</div>';
+        unset($_SESSION['error']); // Clear it so it doesn't persist
     }
-    if ($suc = $_SESSION['success']) {
-        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($suc).'</div>';
+    
+    // Check for success messages
+    if (!empty($_SESSION['success'])) {
+        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($_SESSION['success']).'</div>';
+        unset($_SESSION['success']);
     }
+    
+    // Check for warnings (used in the dashboard for employees)
+    if (!empty($_SESSION['warning'])) {
+        $html .= '<div class="alert alert-warning shadow-sm border-0">'.htmlspecialchars($_SESSION['warning']).'</div>';
+        unset($_SESSION['warning']);
+    }
+    
     return $html;
 }
 

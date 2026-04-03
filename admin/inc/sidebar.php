@@ -54,12 +54,14 @@ function sidebarActive(string $page): string {
         <ul class="nav flex-column gap-1">
 
             <!-- Dashboard overview — visible to all admin/employee -->
+            <?php if ($_isAdmin): ?>
             <li class="nav-item">
                 <a href="<?= app_url('/admin/index.php') ?>"
                    class="nav-link admin-nav-link <?= sidebarActive('dashboard') ?>">
                     <i class="bi bi-speedometer2 me-2"></i>Overview
                 </a>
             </li>
+            <?php endif; ?>
 
             <!-- Product management — admin only (add/edit/delete) -->
             <?php if ($_isAdmin): ?>

@@ -143,17 +143,26 @@ $memberSince = date('M Y', strtotime($user['created_at']));
 
 // Helper to render Zebra_Session flash messages seamlessly
 function renderFlash() {
-    global $session;
     $html = '';
-    if ($err = $session->get_flashdata('error')) {
-        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($err).'</div>';
+    
+    // Check for error messages
+    if (!empty($_SESSION['error'])) {
+        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($_SESSION['error']).'</div>';
+        unset($_SESSION['error']); // Clear it so it doesn't persist
     }
-    if ($suc = $session->get_flashdata('success')) {
-        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($suc).'</div>';
+    
+    // Check for success messages
+    if (!empty($_SESSION['success'])) {
+        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($_SESSION['success']).'</div>';
+        unset($_SESSION['success']);
     }
-    if ($warn = $session->get_flashdata('warning')) {
-        $html .= '<div class="alert alert-warning shadow-sm border-0">'.htmlspecialchars($warn).'</div>';
+    
+    // Check for warnings (used in the dashboard for employees)
+    if (!empty($_SESSION['warning'])) {
+        $html .= '<div class="alert alert-warning shadow-sm border-0">'.htmlspecialchars($_SESSION['warning']).'</div>';
+        unset($_SESSION['warning']);
     }
+    
     return $html;
 }
 

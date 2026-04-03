@@ -176,7 +176,11 @@ $total = count($products);
                         <p id="modalDesc" class="text-muted small"></p>
 
                         <div class="d-flex gap-3 mt-2 mb-2">
-                            <span class="input-group-text bg-white justify-content-center flex-grow-1" id="qtyValue">1</span>
+                            <div class="d-flex align-items-center gap-2 flex-grow-1 border rounded px-2">
+                                <button class="btn btn-sm p-0" id="qtyMinus">−</button>
+                                <span class="flex-grow-1 text-center" id="qtyValue">1</span>
+                                <button class="btn btn-sm p-0" id="qtyPlus">+</button>
+                            </div>
                             <button id="purchaseBtn" class="modal-btn btn btn-dark flex-grow-1"><i class="bi bi-bag me-1"></i> Add to Cart</button>
                         </div>
                         <?php if ($isEmployee): ?>
