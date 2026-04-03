@@ -8,7 +8,8 @@
                     Pomegranate
                 </a>
                 <p class="text-white-50 small" style="line-height:1.7;">
-                    Pushing the boundaries of technology. Innovation isn't just what we do — it's who we are.
+                    Smart picks. Great prices. Zero guesswork.
+                    Find what fits your lifestyle and get support you can count on.
                 </p>
                 <div class="d-flex gap-3 mt-3">
                     <a href="#" class="text-white-50 fs-5" aria-label="Twitter/X"><i class="bi bi-twitter-x"></i></a>
@@ -18,14 +19,14 @@
                 </div>
             </div>
 
-            <!-- Catalog -->
+            <!-- Shop -->
             <div class="col-6 col-md-2 ms-auto">
-                <h6 class="fw-semibold mb-3 text-white small" style="letter-spacing:.08em;text-transform:uppercase;">Catalog</h6>
+                <h6 class="fw-semibold mb-3 text-white small" style="letter-spacing:.08em;text-transform:uppercase;">Shop</h6>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="/catalog.php" class="text-white-50 text-decoration-none small">All Products</a></li>
-                    <li class="mb-2"><a href="/catalog.php?filter=featured" class="text-white-50 text-decoration-none small">Featured</a></li>
-                    <li class="mb-2"><a href="/catalog.php?filter=sale" class="text-white-50 text-decoration-none small">On Sale</a></li>
-                    <li class="mb-2"><a href="/catalog.php?cat=new" class="text-white-50 text-decoration-none small">New Arrivals</a></li>
+                    <li class="mb-2"><a href="/catalog.php?sort=newest" class="text-white-50 text-decoration-none small">New Arrivals</a></li>
+                    <li class="mb-2"><a href="/catalog.php?sort=price_asc" class="text-white-50 text-decoration-none small">Best Deals</a></li>
+                    <li class="mb-2"><a href="/catalog.php?sort=price_desc" class="text-white-50 text-decoration-none small">Premium Picks</a></li>
                 </ul>
             </div>
 
@@ -34,20 +35,20 @@
                 <h6 class="fw-semibold mb-3 text-white small" style="letter-spacing:.08em;text-transform:uppercase;">Company</h6>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="/about.php" class="text-white-50 text-decoration-none small">About Us</a></li>
+                    <li class="mb-2"><a href="/about.php#our-story" class="text-white-50 text-decoration-none small">Our Story</a></li>
                     <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Careers</a></li>
-                    <li class="mb-2"><a href="#contact" class="text-white-50 text-decoration-none small">Contact</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Blog</a></li>
+                    <li class="mb-2"><a href="/index.php#contact" class="text-white-50 text-decoration-none small">Contact</a></li>
                 </ul>
             </div>
 
-            <!-- Support -->
+            <!-- Help -->
             <div class="col-6 col-md-2">
-                <h6 class="fw-semibold mb-3 text-white small" style="letter-spacing:.08em;text-transform:uppercase;">Support</h6>
+                <h6 class="fw-semibold mb-3 text-white small" style="letter-spacing:.08em;text-transform:uppercase;">Help</h6>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Help Centre</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Shipping</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Returns</a></li>
-                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">Warranty</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none small">FAQ</a></li>
+                    <li class="mb-2"><a href="/orders.php" class="text-white-50 text-decoration-none small">Track Orders</a></li>
+                    <li class="mb-2"><a href="/profile.php" class="text-white-50 text-decoration-none small">Account Settings</a></li>
+                    <li class="mb-2"><a href="/login.php" class="text-white-50 text-decoration-none small">Sign In</a></li>
                 </ul>
             </div>
         </div>
@@ -57,7 +58,7 @@
     <div class="border-top" style="border-color:rgba(255,255,255,.07)!important;">
         <div class="container py-3 d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
             <p class="text-white-50 small mb-0">
-                &copy; <span id="year"></span> Pomegranate, Inc. All rights reserved.
+                &copy; <span id="year"></span> Pomegranate. Good tech, made simple.
             </p>
             <div class="d-flex gap-3">
                 <a href="#" class="text-white-50 text-decoration-none small">Privacy</a>

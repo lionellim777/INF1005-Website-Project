@@ -18,18 +18,22 @@
 <!-- ═══════════════════════════════════════════════════════════
      HERO
 ═══════════════════════════════════════════════════════════ -->
-<section style="padding:6rem 0 4rem;position:relative;overflow:hidden;">
+<section id="our-story" style="padding:6rem 0 4rem;position:relative;overflow:hidden;">
     <div class="orb orb-cyan" style="width:500px;height:500px;top:-40%;left:-10%;"></div>
     <div class="orb orb-purple" style="width:400px;height:400px;bottom:-20%;right:-5%;"></div>
 
     <div class="container text-center position-relative" style="z-index:2;">
         <div class="section-label"><i class="bi bi-building"></i> Our Story</div>
         <h1 class="section-heading mb-4">
-            We're Pushing <span class="text-gradient">What's Possible</span>
+            From Spec Sheets to <span class="text-gradient">Real-Life Solutions</span>
         </h1>
-        <p class="text-white-50 mx-auto" style="max-width:600px;font-size:1.1rem;line-height:1.8;">
-            Pomegranate was founded on a simple belief: technology should be beautiful, powerful,
-            and accessible to everyone who dares to dream bigger.
+        <p class="text-white-50 mx-auto" style="max-width:720px;font-size:1.1rem;line-height:1.8;">
+            Pomegranate started with a small team of students, builders, and everyday tech users who were tired of confusing product hype.
+            We set out to create a store that explains technology clearly, recommends responsibly, and helps people buy what they actually need.
+        </p>
+        <p class="text-white-50 mx-auto mb-0" style="max-width:720px;font-size:1.02rem;line-height:1.8;">
+            Today, we focus on practical devices for study, work, and creative projects, carefully selected, honestly priced,
+            and supported by a team that stays with you after checkout.
         </p>
     </div>
 </section>
@@ -39,7 +43,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      MISSION
 ═══════════════════════════════════════════════════════════ -->
-<section style="padding:5rem 0;">
+<section id="mission" style="padding:5rem 0;">
     <div class="container">
         <div class="row align-items-center g-5">
             <div class="col-lg-5 reveal-left">
@@ -97,7 +101,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      VALUES
 ═══════════════════════════════════════════════════════════ -->
-<section style="padding:5rem 0;background:var(--bg-secondary);">
+<section id="values" style="padding:5rem 0;background:var(--bg-secondary);">
     <div class="container">
         <div class="text-center mb-5 reveal">
             <div class="section-label"><i class="bi bi-heart"></i> Values</div>
@@ -130,7 +134,7 @@
 <!-- ═══════════════════════════════════════════════════════════
      TEAM
 ═══════════════════════════════════════════════════════════ -->
-<section style="padding:5rem 0;">
+<section id="team" style="padding:5rem 0;">
     <div class="container">
         <div class="text-center mb-5 reveal">
             <div class="section-label"><i class="bi bi-people"></i> Team</div>
