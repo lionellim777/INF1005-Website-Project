@@ -30,7 +30,7 @@ if ($orderId > 0) {
     <title>Assignment 2 Payment Status</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
     <?php 
@@ -41,7 +41,7 @@ if ($orderId > 0) {
         <?php if ($status === 'completed'): ?>
             <h4 class="fw-bold mt-3">Payment Successful!</h4>
             <p class="text-muted">Thanks for your order. Reference: <strong><?= htmlspecialchars($reference) ?></strong></p>
-            <a href="/catalog.php" class="btn btn-dark mt-2">Continue Shopping</a>
+            <a href="/shop/catalog.php" class="btn btn-dark mt-2">Continue Shopping</a>
             <script>
                 localStorage.removeItem('cart');
             </script>
@@ -62,6 +62,6 @@ if ($orderId > 0) {
         include "inc/footer.inc.php"; 
     ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/cart.js"></script>
+    <script src="/js/cart.js"></script>
 </body>
 </html>

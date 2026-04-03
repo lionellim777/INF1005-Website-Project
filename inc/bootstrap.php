@@ -1,15 +1,5 @@
 <?php
-declare(strict_types=1);
 
-// 1. Send Security Headers immediately to address Audit Baseline
-header("Strict-Transport-Security: max-age=31536000; includeSubDomains");
-header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; img-src 'self' data: https://images.unsplash.com; frame-ancestors 'none';");
-header("X-Frame-Options: DENY");
-header("X-Content-Type-Options: nosniff");
-header("Referrer-Policy: strict-origin-when-cross-origin");
-header("Permissions-Policy: geolocation=(), camera=(), microphone=()");
-
-// 2. Load Core Components
 require_once __DIR__ . '/db_manager.php';
 DB::initialize();
 $db_conn = DB::conn(); // Global fallback for existing scripts
@@ -17,13 +7,13 @@ $db_conn = DB::conn(); // Global fallback for existing scripts
 require_once __DIR__ . '/init_session.php';
 require_once __DIR__ . '/security_utils.php';
 
-// 3. System Constants
+
 define('ROLE_ADMIN', 'admin');
 define('ROLE_EMPLOYEE', 'employee');
 define('ROLE_USER', 'customer');
 define('SITE_NAME', 'Pomegranate Tech');
 
-// 4. Standard Helper Functions
+
 function h(?string $value): string {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
@@ -56,4 +46,21 @@ function renderFlash() {
         }
     }
     return $html;
+}
+
+function app_config(): array
+{
+    static $config;
+
+    if ($config === null) {
+        $config = require __DIR__ . '/config.php';
+    }
+
+    return $config;
+}
+
+function redirect_to(string $path): never
+{
+    header('Location: ' . app_url($path));
+    exit;
 }

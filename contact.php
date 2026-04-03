@@ -207,5 +207,29 @@ $pageTitle = 'Pomegranate | Contact';
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 <script defer src="<?= h(app_url('js/main.js')) ?>"></script>
+<script>
+    // Bulletproof inline script to guarantee character counts work
+    document.addEventListener('DOMContentLoaded', function() {
+        const countElements = document.querySelectorAll('[data-char-count]');
+        
+        countElements.forEach(function(input) {
+            const targetId = input.getAttribute('data-char-count');
+            const targetSpan = document.getElementById(targetId);
+            const maxLength = input.getAttribute('maxlength') || 0;
+
+            function updateCounter() {
+                if (targetSpan) {
+                    targetSpan.textContent = input.value.length + " / " + maxLength;
+                }
+            }
+
+            // Listen for keystrokes
+            input.addEventListener('input', updateCounter);
+            
+            // Run once immediately to set the "0 / 150" state
+            updateCounter(); 
+        });
+    });
+</script>
 </body>
 </html>

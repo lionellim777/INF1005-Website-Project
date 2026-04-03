@@ -1,5 +1,5 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js';;
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from 'three';;
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, controls, model;
@@ -57,24 +57,64 @@ function initThree(containerId, modelPath) {
 }
 
 const productModal = document.getElementById("productModal");
-productModal.addEventListener("shown.bs.modal",function(event){
-    const button = event.relatedTarget;
+if (productModal) {
+    productModal.addEventListener("shown.bs.modal", function(event){
+        const button = event.relatedTarget;
 
-    document.getElementById("modalName").textContent = button.dataset.name;
-    document.getElementById("modalCategory").textContent = button.dataset.category;
-    document.getElementById("modalPrice").textContent = "$" + button.dataset.price;
-    document.getElementById("modalDesc").textContent = button.dataset.desc;
+        document.getElementById("modalName").textContent = button.dataset.name;
+        document.getElementById("modalCategory").textContent = button.dataset.category;
+        document.getElementById("modalPrice").textContent = "$" + button.dataset.price;
+        document.getElementById("modalDesc").textContent = button.dataset.desc;
 
-    initThree("modelShowcase", button.dataset.model);
-    renderReviews(button.dataset.id);
-});
+        // Initialize 3D Engine
+        initThree("modelShowcase", button.dataset.model);
+        renderReviews(button.dataset.id);
 
-productModal.addEventListener("hidden.bs.modal",function(){
-    if(renderer){
-        renderer.dispose();
-        scene.clear();
-    }
-});
+        const addBtn = productModal.querySelector('.modal-btn');
+        // Check if purchase is allowed before assigning click event
+        if (button.dataset.canPurchase === '1') {
+            addBtn.disabled = false;
+            addBtn.innerHTML = '<i class="bi bi-bag me-1"></i> Add to Cart';
+            addBtn.classList.replace('btn-secondary', 'btn-dark');
+            addBtn.onclick = () => {
+                const qty = parseInt(document.getElementById('qtyValue').textContent);
+                Cart.add({
+                    id: button.dataset.id,
+                    name: button.dataset.name,
+                    price: parseFloat(button.dataset.price),
+                    image: button.dataset.image,
+                    qty: qty
+                });
+                addBtn.textContent = '✓ Added!';
+            };
+        } else {
+            addBtn.disabled = true;
+            addBtn.innerHTML = '<i class="bi bi-ban me-1"></i> Cannot Purchase';
+            addBtn.classList.replace('btn-dark', 'btn-secondary');
+            addBtn.onclick = null;
+        }
+
+        document.getElementById('qtyValue').textContent = 1;
+        document.getElementById('qtyMinus').onclick = () =>{
+            const el = document.getElementById('qtyValue');
+            if(parseInt(el.textContent) > 1) el.textContent = parseInt(el.textContent) - 1;
+        };
+        document.getElementById('qtyPlus').onclick = () =>{
+            const el = document.getElementById('qtyValue');
+            el.textContent = parseInt(el.textContent) + 1;
+        };
+    });
+
+    // 3. CLEANUP: Destroy the 3D scene when modal closes
+    productModal.addEventListener("hidden.bs.modal", function(){
+        if(renderer){
+            renderer.dispose();
+            renderer = null; 
+            scene.clear();
+        }
+        document.getElementById("modelShowcase").innerHTML = "";
+    });
+}
 
 const grid = document.getElementById('productGrid');
 const countEl = document.getElementById('productCount');

@@ -141,7 +141,7 @@ $total = count($products);
                             data-oldprice="<?= $product['old_price'] ? number_format($product['old_price'], 2) : '' ?>"
                             data-category="<?= h($product['category']) ?>"
                             data-image="<?= h($product['image_url']) ?>"
-                            data-desc="<?= h($product['desc']) ?>"
+                            data-desc="<?= h($product['description']) ?>"
                             data-model="<?= h(app_url($product['model'])) ?>"
                             data-can-purchase="<?= $canPurchase ? '1' : '0' ?>">
                             <i class="bi bi-bag me-1"></i> View
