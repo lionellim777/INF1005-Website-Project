@@ -115,7 +115,7 @@ unset($_SESSION['success_msg']);
                 </div>
 
                 <div class="col-12 mt-3">
-                    <label class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">PASSWORD</label>
+                    <label for="password" class="form-label text-muted small fw-bold mb-2" style="letter-spacing:.05em;">PASSWORD</label>
                     <div class="search-bar-wrap position-relative d-flex align-items-center">
                         <i class="bi bi-lock position-absolute ms-3"></i>
                         <input type="password" name="pwd" id="password" class="form-control-light w-100 ps-5" placeholder="Min. 8 characters" required>
