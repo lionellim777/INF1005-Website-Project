@@ -14,12 +14,6 @@ body {
 .carousel-caption h5 { font-size: 3rem; font-weight: 700; color: #ffffff; }
 .carousel-caption p { color: rgba(255, 255, 255, 0.75); font-style: italic; font-size: 1.05rem; }
 
-#contact-map {
-    object-fit: cover;
-    object-position: center;
-    filter: saturate(0.9);
-}
-
 #contact-container { min-height: 600px; }
 #contact-submit { background-color: #28666e; }
 
@@ -87,7 +81,6 @@ body {
     font-size: 1.05rem;
 }
 
-#collections,
 #contact-support {
     scroll-margin-top: 90px;
 }

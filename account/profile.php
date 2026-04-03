@@ -138,30 +138,6 @@ $totalOrders = count($orders);
 $totalSpent  = array_sum(array_column($orders, 'total_amount'));
 $memberSince = date('M Y', strtotime($user['created_at']));
 
-// Helper: safe rendering of session flashes
-function renderFlash() {
-    $html = '';
-    
-    // Check for error messages
-    if (!empty($_SESSION['error'])) {
-        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($_SESSION['error']).'</div>';
-        unset($_SESSION['error']); // Clear it so it doesn't persist
-    }
-    
-    // Check for success messages
-    if (!empty($_SESSION['success'])) {
-        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($_SESSION['success']).'</div>';
-        unset($_SESSION['success']);
-    }
-    
-    // Check for warnings (used in the dashboard for employees)
-    if (!empty($_SESSION['warning'])) {
-        $html .= '<div class="alert alert-warning shadow-sm border-0">'.htmlspecialchars($_SESSION['warning']).'</div>';
-        unset($_SESSION['warning']);
-    }
-    
-    return $html;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -193,7 +169,7 @@ function renderFlash() {
                     </div>
                 </div>
                 
-                <form method="POST" action="">
+                <form method="POST" action="/account/logout.php">
                     <input type="hidden" name="csrf_token" value="<?= csrf_token() ?>">
                     <input type="hidden" name="action" value="logout">
                     <button type="submit" class="btn btn-outline-danger fw-bold">
@@ -205,7 +181,7 @@ function renderFlash() {
             <ul class="nav nav-tabs mb-4 border-bottom-0" id="profileTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <a class="nav-link fw-semibold <?= $activeTab === 'overview' ? 'active shadow-sm border-0 rounded-top text-dark' : 'text-muted' ?>"
-                       href="?tab=overview"><i class="bi bi-grid me-1"></i>Overview</a>
+                       href="?tab=overview"><i class="`bi bi-grid me-1"></i>Overview</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link fw-semibold <?= $activeTab === 'settings' ? 'active shadow-sm border-0 rounded-top text-dark' : 'text-muted' ?>"
@@ -369,7 +345,7 @@ function renderFlash() {
                                             <?= htmlspecialchars($order['items'] ?? '—') ?>
                                         </td>
                                         <td class="fw-bold">$<?= number_format($order['total_amount'], 2) ?></td>
-                                        <td><span class="badge rounded-pill <?= $statusCls ?>"><?= ucfirst(htmlspecialchars($order['status'])) ?></span></td>
+                                        <td><span class="badge text-bold text-white <?= $statusCls ?> text-center"><?= ucfirst(htmlspecialchars($order['status'])) ?></span></td>
                                         <td class="pe-4 text-muted small text-end"><?= date('M d, Y', strtotime($order['created_at'])) ?></td>
                                     </tr>
                                     <?php endforeach; ?>

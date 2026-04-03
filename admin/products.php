@@ -208,31 +208,6 @@ $modalMode   = htmlspecialchars($_GET['modal'] ?? '');
 $editId      = (int)($_GET['id'] ?? 0);
 $editProduct = ($modalMode === 'edit' && $editId > 0) ? getProductById($editId) : null;
 
-// Helper: Flash render wrapper
-function renderFlash() {
-    $html = '';
-    
-    // Check for error messages
-    if (!empty($_SESSION['error'])) {
-        $html .= '<div class="alert alert-danger shadow-sm border-0">'.htmlspecialchars($_SESSION['error']).'</div>';
-        unset($_SESSION['error']); // Clear it so it doesn't persist
-    }
-    
-    // Check for success messages
-    if (!empty($_SESSION['success'])) {
-        $html .= '<div class="alert alert-success shadow-sm border-0">'.htmlspecialchars($_SESSION['success']).'</div>';
-        unset($_SESSION['success']);
-    }
-    
-    // Check for warnings (used in the dashboard for employees)
-    if (!empty($_SESSION['warning'])) {
-        $html .= '<div class="alert alert-warning shadow-sm border-0">'.htmlspecialchars($_SESSION['warning']).'</div>';
-        unset($_SESSION['warning']);
-    }
-    
-    return $html;
-}
-
 $currentPage  = 'products';
 $pageTitle    = 'Products – Pomegranate';
 $badgeOptions = ['', 'New', 'Sale', 'Best Seller', 'Limited'];

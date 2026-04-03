@@ -1,50 +1,24 @@
-// 1. IMPORTS MUST BE AT THE ABSOLUTE TOP
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@<version>/build/three.module.js';;
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, controls, model;
-
-// 2. The DOM Content Loaded block moved below imports
-document.addEventListener("DOMContentLoaded", function() {
-    let currentPath = window.location.pathname;
-    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        link.removeAttribute('aria-current');
-        let linkPath = link.getAttribute('href');
-        if(currentPath === linkPath){
-            link.classList.add('active');
-            link.setAttribute('aria-current', 'page');
-        }
-    });
-});
 
 function initThree(containerId, modelPath) {
     const container = document.getElementById(containerId);
     if (!container) return;
     
-    // Clear container completely
     container.innerHTML = "";
-
-    // If no model path is provided, show a placeholder and exit
-    if (!modelPath || modelPath.trim() === "") {
-        container.innerHTML = `<div class="d-flex h-100 align-items-center justify-content-center text-white-50 flex-column">
-            <i class="bi bi-box fs-1 mb-2"></i>
-            <p>No 3D Model Available</p>
-        </div>`;
-        return;
-    }
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x285f6b);
 
+    // Ensure the container has height, If 0, renderer will be invisible.
     const width = container.clientWidth;
     const height = container.clientHeight;
 
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.set(0, 1, 5);
+    camera.position.set(0, 1, 5); // Moved back slightly
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(width, height);
@@ -58,9 +32,11 @@ function initThree(containerId, modelPath) {
     dirLight.position.set(5, 5, 5);
     scene.add(dirLight);
 
+    // Use the imported OrbitControls
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
+    // Use the imported GLTFLoader
     new GLTFLoader().load(modelPath, (gltf) => {
         const model  = gltf.scene;
         const box = new THREE.Box3().setFromObject(model);
@@ -70,11 +46,9 @@ function initThree(containerId, modelPath) {
         model.scale.setScalar(scale);
         model.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
         scene.add(model);
-    });
+      });
 
     function animate(){
-        // Only keep animating if renderer still exists (stops memory leaks when modal closes)
-        if (!renderer) return; 
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
@@ -83,66 +57,25 @@ function initThree(containerId, modelPath) {
 }
 
 const productModal = document.getElementById("productModal");
-if (productModal) {
-    productModal.addEventListener("shown.bs.modal", function(event){
-        const button = event.relatedTarget;
+productModal.addEventListener("shown.bs.modal",function(event){
+    const button = event.relatedTarget;
 
-        document.getElementById("modalName").textContent = button.dataset.name;
-        document.getElementById("modalCategory").textContent = button.dataset.category;
-        document.getElementById("modalPrice").textContent = "$" + button.dataset.price;
-        document.getElementById("modalDesc").textContent = button.dataset.desc;
+    document.getElementById("modalName").textContent = button.dataset.name;
+    document.getElementById("modalCategory").textContent = button.dataset.category;
+    document.getElementById("modalPrice").textContent = "$" + button.dataset.price;
+    document.getElementById("modalDesc").textContent = button.dataset.desc;
 
-        // Initialize 3D Engine
-        initThree("modelShowcase", button.dataset.model);
-        renderReviews(button.dataset.id);
+    initThree("modelShowcase", button.dataset.model);
+    renderReviews(button.dataset.id);
+});
 
-        const addBtn = productModal.querySelector('.modal-btn');
-        // Check if purchase is allowed before assigning click event
-        if (button.dataset.canPurchase === '1') {
-            addBtn.disabled = false;
-            addBtn.innerHTML = '<i class="bi bi-bag me-1"></i> Add to Cart';
-            addBtn.classList.replace('btn-secondary', 'btn-dark');
-            addBtn.onclick = () => {
-                const qty = parseInt(document.getElementById('qtyValue').textContent);
-                Cart.add({
-                    id: button.dataset.id,
-                    name: button.dataset.name,
-                    price: parseFloat(button.dataset.price),
-                    image: button.dataset.image,
-                    qty: qty
-                });
-                addBtn.textContent = '✓ Added!';
-            };
-        } else {
-            addBtn.disabled = true;
-            addBtn.innerHTML = '<i class="bi bi-ban me-1"></i> Cannot Purchase';
-            addBtn.classList.replace('btn-dark', 'btn-secondary');
-            addBtn.onclick = null;
-        }
+productModal.addEventListener("hidden.bs.modal",function(){
+    if(renderer){
+        renderer.dispose();
+        scene.clear();
+    }
+});
 
-        document.getElementById('qtyValue').textContent = 1;
-        document.getElementById('qtyMinus').onclick = () =>{
-            const el = document.getElementById('qtyValue');
-            if(parseInt(el.textContent) > 1) el.textContent = parseInt(el.textContent) - 1;
-        };
-        document.getElementById('qtyPlus').onclick = () =>{
-            const el = document.getElementById('qtyValue');
-            el.textContent = parseInt(el.textContent) + 1;
-        };
-    });
-
-    // 3. CLEANUP: Destroy the 3D scene when modal closes
-    productModal.addEventListener("hidden.bs.modal", function(){
-        if(renderer){
-            renderer.dispose();
-            renderer = null; 
-            scene.clear();
-        }
-        document.getElementById("modelShowcase").innerHTML = "";
-    });
-}
-
-// ... The rest of your filtering and review logic stays exactly the same below here
 const grid = document.getElementById('productGrid');
 const countEl = document.getElementById('productCount');
 const sortSelect = document.getElementById('sortSelect');
@@ -162,12 +95,9 @@ if(categoryFromUrl) {
     });
 }
 
-if (grid) {
-    filterSort();
-}
+filterSort();
  
 function filterSort() {
-    if (!grid) return;
     const cards = [...grid.querySelectorAll('.col[data-category]')];
     // Filter
     cards.forEach(card =>{
@@ -194,11 +124,9 @@ function filterSort() {
     }
  
     // Update count label
-    if (countEl) {
-        const count = visible.length;
-        countEl.innerHTML = `Showing <strong>${count}</strong> product${count !== 1 ? 's' : ''}` +
-            (activeFilter !== 'all' ? ` in <strong>${activeFilter}</strong>` : '');
-    }
+    const count = visible.length;
+    countEl.innerHTML = `Showing <strong>${count}</strong> product${count !== 1 ? 's' : ''}` +
+        (activeFilter !== 'all' ? ` in <strong>${activeFilter}</strong>` : '');
 }
 
 filterBtns.forEach(btn =>btn.addEventListener('click', () =>{
@@ -208,24 +136,19 @@ filterBtns.forEach(btn =>btn.addEventListener('click', () =>{
     filterSort();
 }));
  
-if (sortSelect) {
-    sortSelect.addEventListener('change', filterSort);
-}
+sortSelect.addEventListener('change', filterSort);
 
 function renderReviews(productId){
     const reviewList = document.getElementById("reviewList");
     const reviewSummary = document.getElementById("reviewSummary");
-    if (!reviewList || !reviewSummary || typeof ALL_REVIEWS === 'undefined') return;
-
     const reviews = ALL_REVIEWS.filter(r => r.product_id == productId);
-    
+    const avg = (reviews.reduce((sum, r) => sum + +r.stars, 0) / reviews.length).toFixed(1);
 
     if(reviews.length==0){
         reviewSummary.innerHTML = `<small class="text-muted">No reviews yet</small>`;
         reviewList.innerHTML = "";
         return;
     }else{
-        const avg = (reviews.reduce((sum, r) => sum + +r.stars, 0) / reviews.length).toFixed(1);
         reviewSummary.innerHTML = `
             <div class="d-flex align-items-center gap-3 mb-2">
                 <span class="fs-2 fw-bold">${avg}</span>

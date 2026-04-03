@@ -6,9 +6,9 @@ require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/security_utils.php';
 
 // PHPMailer dependencies
-require_once APP_ROOT . '/vendor/PHPMailer/src/Exception.php';
-require_once APP_ROOT . '/vendor/PHPMailer/src/PHPMailer.php';
-require_once APP_ROOT . '/vendor/PHPMailer/src/SMTP.php';
+require_once dirname(__DIR__) . '/vendor/PHPMailer/src/Exception.php';
+require_once dirname(__DIR__) . '/vendor/PHPMailer/src/PHPMailer.php';
+require_once dirname(__DIR__) . '/vendor/PHPMailer/src/SMTP.php';
 
 use PHPMailer\PHPMailer\Exception as MailerException;
 use PHPMailer\PHPMailer\PHPMailer;

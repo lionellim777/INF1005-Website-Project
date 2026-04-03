@@ -110,21 +110,6 @@
     flex-shrink: 0;
 }
 
-/* Warning highlight on low-stock stat card */
-.stat-card-warning {
-    border-left: 4px solid #ffc107 !important;
-}
-
-/* Brand-colour active filter highlight */
-.stat-card-active {
-    border-left: 4px solid #28666e !important;
-}
-
-/* Danger highlight on out-of-stock stat card */
-.stat-card-danger {
-    border-left: 4px solid #dc3545 !important;
-}
-
 /* ----------------------------------------------------------
    Flash messages — constrain width so they don't
    stretch edge-to-edge on wide content areas

@@ -43,7 +43,7 @@ if (empty(trim($initials))) $initials = 'U';
             <span class="fw-bold text-white">Pomegranate</span>
         </a>
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 

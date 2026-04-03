@@ -1,6 +1,27 @@
 <?php
+require_once __DIR__ . '/inc/bootstrap.php';
+require_once __DIR__ . '/inc/auth_middleware.php';
+
+require_login();
+
 $status = $_GET['status'] ?? 'unknown';
-$reference = $_GET['reference'] ?? '';
+$orderId = $_GET['order_id'] ?? 0;
+$reference = '';
+
+// Fetch the reference from the database using the order_id from the URL
+if ($orderId > 0) {
+    global $db_conn;
+    $stmt = $db_conn->prepare("SELECT reference FROM orders WHERE id = ?");
+    $stmt->bind_param("i", $orderId);
+    if ($stmt->execute()) {
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $reference = $row['reference'];
+        }
+    }
+    $stmt->close();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +54,7 @@ $reference = $_GET['reference'] ?? '';
                 ? 'You cancelled the payment.' 
                 : 'Something went wrong. Please try again.' ?>
         </p>
-        <a href="/cart.php" class="btn btn-dark mt-2">Back to Cart</a>
+        <a href="/shop/cart.php" class="btn btn-dark mt-2">Back to Cart</a>
     <?php endif; ?>
     </div>
 
